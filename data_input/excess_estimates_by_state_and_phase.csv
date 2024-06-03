@@ -1,0 +1,52 @@
+﻿state,ph1,ph2,ph3,ph4,ph5,overall,region,division
+Alaska,2.2,84.3,225.4,117.4,38.2,116.5,West,Pacific
+New Mexico,40,220.9,300.1,118.8,31.8,177.7,West,Mountain
+Wyoming,17.4,169.5,262.9,94,31.1,143.7,West,Mountain
+Arizona,26.6,219.3,219.4,87,21.8,141.1,West,Mountain
+Oregon,4,52.2,167.9,94.2,21.2,84.6,West,Pacific
+Delaware,67.1,130.3,168.7,77.7,18,115,South,South Atlantic
+West Virginia,25,195.4,353.2,149.1,17.9,185.5,South,South Atlantic
+District of Columbia,156.5,151.5,233.2,94.8,17.2,164.7,South,South Atlantic
+Colorado,36.8,98.2,165.4,67.6,16.2,95.5,West,Mountain
+California,18.8,164.3,105.7,61.2,16.1,90.9,West,Pacific
+South Carolina,28.4,229.4,243.6,80.9,12.8,148,South,South Atlantic
+Hawaii,-3.2,29,95.7,68.1,12.8,50.6,West,Pacific
+Virginia,31.6,116.3,154.9,71.2,12.7,96.1,South,South Atlantic
+Nevada,11.7,160,192.1,63.6,12.1,108.1,West,Mountain
+Kentucky,18.5,170.5,258.3,86.4,11.6,136.1,South,East South Central
+Washington,8.2,41,123.1,72.4,10.5,63.5,West,Pacific
+Kansas,8.9,164.7,157.6,47.2,8.9,96.7,Midwest,West North Central
+Louisiana,82.6,188.5,225.6,69.5,7.7,143.2,South,West South Central
+New Hampshire,25.1,49.9,72.9,59.7,7,53.5,North East,New England
+Maine,-1.8,50.6,146.2,80.7,6.8,70.6,North East,New England
+North Carolina,17.6,141,176.1,63.3,5.8,100,South,South Atlantic
+Arkansas,6,214.5,228.7,76.4,5.6,132.2,South,West South Central
+Minnesota,26.6,76.4,95.8,38.1,4.2,60,Midwest,West North Central
+Texas,11.6,194.1,169.7,36.1,3.2,102.3,South,West South Central
+Mississippi,50.5,266.9,263.4,78.1,2.7,165.2,South,East South Central
+Vermont,17.6,32.6,81.9,47.1,0.8,44.9,North East,New England
+Georgia,31,173.5,193.7,56.3,0.7,112.8,South,South Atlantic
+Wisconsin,18.2,120.8,115.9,36.5,0.1,72.7,Midwest,East North Central
+Missouri,21.5,173.8,180.5,51.9,-1.9,106.1,Midwest,West North Central
+Illinois,66.3,115.4,114.4,36.9,-2.3,82.5,Midwest,East North Central
+Tennessee,14.6,204.9,249.8,54.7,-3.3,129.3,South,East South Central
+Nebraska,5.1,111.8,86.8,-2,-3.5,49.5,Midwest,West North Central
+Alabama,31.7,243.6,220.1,29.7,-4,129.9,South,East South Central
+Iowa,17.2,137.4,103.7,25.3,-5.7,69.6,Midwest,West North Central
+Michigan,68.8,97.6,168.1,33.7,-5.8,90.6,Midwest,East North Central
+Utah,5.3,75.8,96.6,25.4,-6.6,48.5,West,Mountain
+Florida,13.7,134.7,190.2,37.5,-6.7,90.8,South,South Atlantic
+Oklahoma,6.7,207.8,224.3,52.8,-7.2,120.6,South,West South Central
+Ohio,28.5,171.6,190.6,22.7,-8.6,101.2,Midwest,East North Central
+Idaho,-3.5,97.3,169.7,22,-8.9,68.5,West,Mountain
+Indiana,43.9,152.9,171.7,38.7,-9.6,99.1,Midwest,East North Central
+New York,200.2,75,77.1,25.7,-11.9,91.6,North East,Mid-Atlantic
+Maryland,69.9,100.4,82.6,13.4,-12.8,62.8,South,South Atlantic
+Montana,-7.4,138.6,204.2,10.4,-15.1,82.4,West,Mountain
+Connecticut,119.9,75.5,64.8,26.2,-20,66.5,North East,New England
+Rhode Island,73.4,86.4,28.5,-31.9,-22,33.5,North East,New England
+Massachusetts,109.6,23.8,17.8,-0.2,-25,31.4,North East,New England
+Pennsylvania,50.6,123.9,107.6,-7.9,-27.6,61.6,North East,Mid-Atlantic
+North Dakota,20.2,200.5,121.6,0.1,-28.7,78.7,Midwest,West North Central
+New Jersey,179.5,65,46.1,-22.1,-32.6,58.5,North East,Mid-Atlantic
+South Dakota,0.4,220.7,108.3,-0.9,-35.2,73.3,Midwest,West North Central
