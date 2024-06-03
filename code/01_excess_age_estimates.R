@@ -1,5 +1,5 @@
 rm (list = ls())
-source("Code/00_setup.R")
+source("code/00_setup.R")
 
 # age structure of deaths in each pandemic phase ====
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -23,6 +23,7 @@ dtm_all <- read_tsv("data_input/dts_ages_all_monthly_states_2020_2023.txt")
 # Monthly deaths in all ages
 dtm_knw <- read_tsv("data_input/dts_ages_all_known_monthly_states_2020_2023.txt")
 
+# Function to standardize names for these assorted input files
 std_this <- 
   function(x){
     x %>% 
@@ -35,6 +36,7 @@ std_this <-
              date = make_date(y = year, m = mth, d = 15))
   }
 
+# standardize each of the death input files
 dtm_all2 <- std_this(dtm_all) %>% rename(dx_all = dx)
 dtm_knw2 <- std_this(dtm_knw) %>% rename(dx_knw = dx)
 dtm_15p2 <- std_this(dtm_15p) %>% rename(dx_15p = dx)
@@ -42,7 +44,9 @@ dtm_25p2 <- std_this(dtm_25p) %>% rename(dx_25p = dx)
 dtm_35p2 <- std_this(dtm_35p) %>% rename(dx_35p = dx)
 dtm_45p2 <- std_this(dtm_45p) %>% rename(dx_45p = dx)
 
-# deaths under 15
+# deaths under 15; we need to infer some deaths for specific
+# age groups due to potential cell suppression. This is basically
+# decumulating cumulative sums.
 dtm <- 
   dtm_all2 %>% 
   left_join(dtm_knw2) %>% 
@@ -64,7 +68,7 @@ dtm <-
 dtm2 <- 
   dtm %>% 
   select(state, date, dx_15u, dx_1524, dx_2534, dx_3544) %>% 
-  gather(dx_15u, dx_1524, dx_2534, dx_3544, key = age, value = dx) %>% 
+  pivot_longer(c(dx_15u, dx_1524, dx_2534, dx_3544), names_to = "age", values_to = "dx") |> 
   mutate(age = case_when(age == "dx_15u" ~ 0,
                          age == "dx_1524" ~ 15,
                          age == "dx_2534" ~ 25,
@@ -131,8 +135,8 @@ dts_ph <-
   filter(phase %in% 1:5) %>% 
   group_by(phase, state, age) %>% 
   summarise(dx = sum(dx),
-            dx_all = sum(dx_all)) %>% 
-  ungroup() 
+            dx_all = sum(dx_all),
+            .groups = "drop") 
 
 
 
@@ -145,7 +149,7 @@ exc <- read_csv("data_input/excess_estimates_by_state_and_phase.csv")
 exc2 <- 
   exc %>% 
   select(state, ph1, ph2, ph3, ph4, ph5) %>% 
-  gather(-state, key = phase, value = cedr) %>% 
+  pivot_longer(-state, names_to = "phase", values_to = "cedr") %>% 
   mutate(phase = str_remove(phase, "ph"),
          year_pop = case_when(phase == 1 ~ 2020,
                               phase == 2 ~ 2020,
@@ -184,27 +188,32 @@ pop_age <-
   summarise(pop = sum(pop)) %>% 
   ungroup()
 
-write_rds(pop_age, "data_inter/pop_state_age_2013_2024.rds")
+write_csv(pop_age, "data_inter/pop_state_age_2013_2024.csv")
 
+# Derive total state pop
+# This is needed to back out excess deaths expressed as counts
 pop_tot <- 
   pop_age %>% 
   group_by(state, year) %>% 
   summarise(pop = sum(pop)) %>% 
   ungroup()
 
+# USA total population
 pop_us <- 
   pop_tot %>% 
   group_by(year) %>% 
   summarise(pop = sum(pop)) %>% 
   ungroup()
 
-
+# combine the Woolf data (stated as excess / 100k)
+# and convert to counts using imported state populations
 exc3 <- 
   exc2 %>% 
   left_join(pop_tot %>% rename(year_pop = year)) %>% 
   mutate(exc_tot = cedr*pop/1e5,
          phase = phase %>% as.double())
 
+# Select just needed columns; here we have excess deaths by state and phase
 exc4 <- 
   exc3 %>% 
   select(state, phase, exc_tot) %>% 
@@ -213,6 +222,7 @@ exc4 <-
 # total baseline ====
 # ~~~~~~~~~~~~~~~~~~~
 
+# This is observed deaths (CDC wonder) minus the Woolf excess estimate
 dts_ph2 <- 
   dts_ph %>% 
   left_join(exc4) %>% 
@@ -228,7 +238,8 @@ dt10a <- read_tsv("data_input/dts_agex10_annual_states_2015_2020.txt")
 # under 15 mortality as one group
 dtu15a <- read_tsv("data_input/dts_ageU15_annual_states_2015_2020.txt")
 
-
+# standardize column names (risky to rename based on position,
+# but these files are regular)
 dt10a2 <- 
   dt10a %>% 
   select(state = 2, 
@@ -254,6 +265,9 @@ dtu15a2 <-
   mutate(age = "0")
 
 # average age structure of annual deaths by state in 2017-2019
+# ages 0-14, 15-24, 25-34, ..., 85+
+# The result, cx_bsn is the fraction of deaths in each age 
+
 dta <- 
   dt10a2 %>% 
   filter(!age %in% c("1", "1-4", "5-14", "NS")) %>% 
@@ -262,33 +276,45 @@ dta <-
   arrange(state, year, age) %>% 
   filter(year %in% 2017:2019) %>% 
   group_by(state, age) %>% 
+  # sum deaths by state and age in 3-year prepandemic period
   summarise(dx = sum(dx)) %>% 
   group_by(state) %>% 
   mutate(cx_bsn = dx/sum(dx)) %>% 
   ungroup() %>% 
   select(-dx) %>% 
-  separate(age, c("age", "trash")) %>% 
-  mutate(age = age %>% as.double()) %>% 
-  select(-trash)
+  separate(age, c("age", NA)) %>% 
+  mutate(age = age %>% as.double()) 
+
+# What do these age patterns of deaths look like?
+# dta |> 
+#   ggplot(aes(x = age, y = cx_bsn, group = state)) +
+#   geom_line(alpha = .5) +
+#   theme_minimal()
 
 
-
-
-# merging ====
+# Join inferred state total baseline deaths
+# with prepandemic baseline age patterns, to
+# derive expected deaths by age- difference
+# from observed deaths (dx) gives implied 
+# excess by age
 dts_ph3 <- 
   dts_ph2 %>% 
-  left_join(dta) %>% 
+  left_join(dta,
+            by = join_by(state, age)) %>% 
   mutate(bsn = bsn_tot * cx_bsn,
          exc = dx - bsn)
 
-
-tst <- 
-  dts_ph3 %>% 
+# check sums; teeny tiny residuals, a matter of
+# machine precision.
+dts_ph3 %>% 
   group_by(phase, state) %>% 
-  summarise(exc = sum(exc))
+  summarise(exc2 = sum(exc), .groups = 'drop') |> 
+  left_join(exc4, by = join_by(state,phase)) |> 
+  mutate(check = exc2 - exc_tot) |> 
+  pull(check) 
 
 
-write_rds(dts_ph3, "data_inter/excess_state_phase_age.rds")
+write_csv(dts_ph3, "data_inter/excess_state_phase_age.csv")
 
 # 
 # 
