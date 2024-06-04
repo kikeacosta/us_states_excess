@@ -1,11 +1,12 @@
 rm (list = ls())
 source("Code/00_setup.R")
 
+# population counts by age and state; but what reference date? July 1?
 pop_us <- read_tsv("data_input/pop_us_agex5_2015_2023.txt")
 
-pop_sts <- read_rds("data_inter/pop_state_age_2013_2024.rds")
+pop_sts <- read_csv("data_inter/pop_state_age_2013_2024.csv")
 
-dt <- read_rds("data_inter/excess_state_phase_age.rds")
+dt <- read_csv("data_inter/excess_state_phase_age.csv")
 
 dt2 <- 
   dt %>% 
@@ -24,3 +25,6 @@ d2 <- interval(ph2[1], ph2[2]) %>% as.numeric('years')
 d3 <- interval(ph3[1], ph3[2]) %>% as.numeric('years')
 d4 <- interval(ph4[1], ph4[2]) %>% as.numeric('years')
 d5 <- interval(ph5[1], ph5[2]) %>% as.numeric('years')
+
+
+
