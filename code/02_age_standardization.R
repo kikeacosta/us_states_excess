@@ -114,6 +114,5 @@ cmp <-
   left_join(exc_wlf2 %>% 
               select(phase, state, rnk_raw),
             join_by(phase, state))
-cmp |> pivot_longer(3:4, names_to = "variant", values_to = "rank") |> ggplot(aes(x = variant, y = rank, group = state)) +geom_line() +facet_wrap(~phase)  + theme_minimal()
 
 write_csv(cmp, "data_inter/preliminary_ranks_raw_std.csv")
