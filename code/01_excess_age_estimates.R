@@ -276,7 +276,7 @@ dta <-
   arrange(state, year, age) %>% 
   filter(year %in% 2017:2019) %>% 
   group_by(state, age) %>% 
-  # sum deaths by state and age in 3-year prepandemic period
+  # sum deaths by state and age in 3-year pre-pandemic period
   summarise(dx = sum(dx)) %>% 
   group_by(state) %>% 
   mutate(cx_bsn = dx/sum(dx)) %>% 
@@ -286,14 +286,14 @@ dta <-
   mutate(age = age %>% as.double()) 
 
 # What do these age patterns of deaths look like?
-# dta |> 
+# dta |>
 #   ggplot(aes(x = age, y = cx_bsn, group = state)) +
 #   geom_line(alpha = .5) +
 #   theme_minimal()
 
 
 # Join inferred state total baseline deaths
-# with prepandemic baseline age patterns, to
+# with pre-pandemic baseline age patterns, to
 # derive expected deaths by age- difference
 # from observed deaths (dx) gives implied 
 # excess by age
