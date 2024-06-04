@@ -1,14 +1,14 @@
 phase,state,rnk_std,rnk_raw
-1,District of Columbia,1,3
-1,New York,2,1
-1,New Jersey,3,2
-1,Connecticut,4,4
-1,Massachusetts,5,5
+1,New York,1,1
+1,New Jersey,2,2
+1,District of Columbia,3,3
+1,Massachusetts,4,5
+1,Connecticut,5,4
 1,Louisiana,6,6
 1,Maryland,7,8
-1,Illinois,8,11
+1,Rhode Island,8,7
 1,Michigan,9,9
-1,Rhode Island,10,7
+1,Illinois,10,11
 1,Delaware,11,10
 1,Mississippi,12,13
 1,Indiana,13,14
@@ -18,35 +18,35 @@ phase,state,rnk_std,rnk_raw
 1,New Mexico,17,15
 1,Virginia,18,18
 1,Alabama,19,17
-1,Ohio,20,20
+1,New Hampshire,20,24
 1,Minnesota,21,23
-1,South Carolina,22,21
-1,Arizona,23,22
-1,New Hampshire,24,24
-1,West Virginia,25,25
+1,Ohio,22,20
+1,South Carolina,23,21
+1,Arizona,24,22
+1,California,25,28
 1,Missouri,26,26
-1,North Dakota,27,27
-1,California,28,28
-1,North Carolina,29,31
-1,Kentucky,30,29
+1,North Carolina,27,31
+1,West Virginia,28,25
+1,Wyoming,29,33
+1,North Dakota,30,27
 1,Wisconsin,31,30
-1,Iowa,32,34
+1,Kentucky,32,29
 1,Vermont,33,32
-1,Wyoming,34,33
-1,Tennessee,35,35
-1,Texas,36,38
-1,Nevada,37,37
-1,Florida,38,36
+1,Iowa,34,34
+1,Texas,35,38
+1,Nevada,36,37
+1,Florida,37,36
+1,Tennessee,38,35
 1,Kansas,39,39
 1,Washington,40,40
-1,Utah,41,43
-1,Nebraska,42,44
-1,Oklahoma,43,41
-1,Arkansas,44,42
-1,Oregon,45,45
-1,South Dakota,46,47
-1,Alaska,47,46
-1,Maine,48,48
+1,Oklahoma,41,41
+1,Utah,42,43
+1,Arkansas,43,42
+1,Nebraska,44,44
+1,Alaska,45,46
+1,Oregon,46,45
+1,Maine,47,48
+1,South Dakota,48,47
 1,Hawaii,49,49
 1,Idaho,50,50
 1,Montana,51,51
@@ -57,96 +57,96 @@ phase,state,rnk_std,rnk_raw
 2,Georgia,5,15
 2,Arizona,6,6
 2,Arkansas,7,7
-2,Tennessee,8,9
-2,Oklahoma,9,8
-2,New Mexico,10,4
-2,District of Columbia,11,23
-2,South Dakota,12,5
-2,Louisiana,13,13
-2,California,14,20
-2,Nevada,15,21
-2,Kentucky,16,17
-2,North Dakota,17,10
-2,Missouri,18,14
+2,Oklahoma,8,8
+2,Tennessee,9,9
+2,South Dakota,10,5
+2,New Mexico,11,4
+2,Louisiana,12,13
+2,California,13,20
+2,Nevada,14,21
+2,Kentucky,15,17
+2,Missouri,16,14
+2,Ohio,17,16
+2,North Dakota,18,10
 2,West Virginia,19,11
-2,Ohio,20,16
-2,Indiana,21,22
-2,Kansas,22,19
-2,North Carolina,23,24
-2,Wyoming,24,18
-2,Illinois,25,32
-2,Virginia,26,31
+2,Indiana,20,22
+2,Kansas,21,19
+2,North Carolina,22,24
+2,Wyoming,23,18
+2,District of Columbia,24,23
+2,Virginia,25,31
+2,Illinois,26,32
 2,Delaware,27,28
 2,Iowa,28,26
-2,Montana,29,25
-2,Wisconsin,30,30
+2,Wisconsin,29,30
+2,Montana,30,25
 2,Alaska,31,39
-2,Colorado,32,35
-2,Maryland,33,34
+2,Maryland,32,34
+2,Colorado,33,35
 2,Utah,34,41
-2,Florida,35,27
-2,Pennsylvania,36,29
-2,Nebraska,37,33
-2,Idaho,38,37
+2,Pennsylvania,35,29
+2,Florida,36,27
+2,Idaho,37,37
+2,Nebraska,38,33
 2,Michigan,39,36
-2,Minnesota,40,40
-2,Rhode Island,41,38
+2,Rhode Island,40,38
+2,Minnesota,41,40
 2,New York,42,43
 2,Connecticut,43,42
-2,New Jersey,44,44
-2,Oregon,45,45
-2,New Hampshire,46,47
+2,New Hampshire,44,47
+2,New Jersey,45,44
+2,Oregon,46,45
 2,Washington,47,48
 2,Maine,48,46
 2,Vermont,49,49
 2,Hawaii,50,50
 2,Massachusetts,51,51
 3,West Virginia,1,1
-3,District of Columbia,2,8
-3,Alaska,3,11
-3,New Mexico,4,2
-3,Mississippi,5,3
-3,Kentucky,6,5
-3,Tennessee,7,6
-3,South Carolina,8,7
-3,Louisiana,9,10
-3,Georgia,10,16
-3,Oklahoma,11,12
+3,Alaska,2,11
+3,New Mexico,3,2
+3,Mississippi,4,3
+3,Kentucky,5,5
+3,Tennessee,6,6
+3,South Carolina,7,7
+3,District of Columbia,8,8
+3,Georgia,9,16
+3,Wyoming,10,4
+3,Louisiana,11,10
 3,Arkansas,12,9
-3,Wyoming,13,4
+3,Oklahoma,13,12
 3,Arizona,14,14
-3,Alabama,15,13
-3,Nevada,16,17
+3,Nevada,15,17
+3,Alabama,16,13
 3,Texas,17,23
-3,Ohio,18,18
-3,North Carolina,19,21
+3,North Carolina,18,21
+3,Ohio,19,18
 3,Colorado,20,28
-3,Indiana,21,22
-3,Idaho,22,24
-3,Missouri,23,20
-3,Montana,24,15
+3,Idaho,21,24
+3,Indiana,22,22
+3,Oregon,23,27
+3,Missouri,24,20
 3,Michigan,25,26
-3,Oregon,26,27
-3,Kansas,27,29
-3,Virginia,28,30
-3,Florida,29,19
-3,Delaware,30,25
+3,Virginia,26,30
+3,Montana,27,15
+3,Florida,28,19
+3,Delaware,29,25
+3,Kansas,30,29
 3,Utah,31,40
-3,North Dakota,32,33
-3,Washington,33,32
+3,Washington,32,32
+3,Maine,33,31
 3,Illinois,34,35
-3,Maine,35,31
+3,California,35,38
 3,Wisconsin,36,34
-3,South Dakota,37,36
-3,California,38,38
-3,Pennsylvania,39,37
-3,Minnesota,40,41
-3,Iowa,41,39
-3,Nebraska,42,43
-3,Maryland,43,44
-3,Hawaii,44,42
-3,New York,45,46
-3,Vermont,46,45
+3,Minnesota,37,41
+3,South Dakota,38,36
+3,Iowa,39,39
+3,Maryland,40,44
+3,Pennsylvania,41,37
+3,Hawaii,42,42
+3,North Dakota,43,33
+3,Nebraska,44,43
+3,Vermont,45,45
+3,New York,46,46
 3,New Hampshire,47,47
 3,Connecticut,48,48
 3,New Jersey,49,49
@@ -154,103 +154,103 @@ phase,state,rnk_std,rnk_raw
 3,Massachusetts,51,51
 4,Alaska,1,3
 4,West Virginia,2,1
-4,District of Columbia,3,4
-4,New Mexico,4,2
-4,Oregon,5,5
-4,Kentucky,6,8
-4,Arizona,7,7
-4,Mississippi,8,11
-4,Wyoming,9,6
-4,South Carolina,10,9
-4,Colorado,11,18
-4,Washington,12,14
-4,Arkansas,13,13
-4,Virginia,14,15
-4,Louisiana,15,16
-4,Nevada,16,19
-4,Maine,17,10
-4,Delaware,18,12
-4,Georgia,19,23
-4,North Carolina,20,20
-4,California,21,21
-4,Hawaii,22,17
+4,New Mexico,3,2
+4,Oregon,4,5
+4,Arizona,5,7
+4,Mississippi,6,11
+4,South Carolina,7,9
+4,Kentucky,8,8
+4,Virginia,9,15
+4,District of Columbia,10,4
+4,Wyoming,11,6
+4,Nevada,12,19
+4,Colorado,13,18
+4,Arkansas,14,13
+4,Washington,15,14
+4,Georgia,16,23
+4,California,17,21
+4,Maine,18,10
+4,North Carolina,19,20
+4,Hawaii,20,17
+4,Louisiana,21,16
+4,Delaware,22,12
 4,New Hampshire,23,22
-4,Tennessee,24,24
-4,Oklahoma,25,25
+4,Oklahoma,24,25
+4,Tennessee,25,24
 4,Missouri,26,26
 4,Kansas,27,27
-4,Indiana,28,29
-4,Texas,29,34
-4,Minnesota,30,30
-4,Illinois,31,32
-4,Vermont,32,28
-4,Wisconsin,33,33
-4,Utah,34,39
+4,Texas,28,34
+4,Vermont,29,28
+4,Illinois,30,32
+4,Utah,31,39
+4,Indiana,32,29
+4,Minnesota,33,30
+4,Florida,34,31
 4,Michigan,35,35
-4,Florida,36,31
+4,Wisconsin,36,33
 4,Alabama,37,36
-4,Iowa,38,40
+4,Connecticut,38,37
 4,New York,39,38
-4,Connecticut,40,37
-4,Ohio,41,41
+4,Iowa,40,40
+4,Maryland,41,43
 4,Idaho,42,42
-4,North Dakota,43,45
-4,Maryland,44,43
-4,South Dakota,45,47
-4,Montana,46,44
-4,Massachusetts,47,46
-4,Nebraska,48,48
+4,Ohio,43,41
+4,Montana,44,44
+4,Nebraska,45,48
+4,Massachusetts,46,46
+4,South Dakota,47,47
+4,North Dakota,48,45
 4,Pennsylvania,49,49
 4,New Jersey,50,50
 4,Rhode Island,51,51
 5,Alaska,1,1
 5,New Mexico,2,2
 5,Wyoming,3,3
-5,Oregon,4,5
-5,Arizona,5,4
-5,District of Columbia,6,8
-5,Colorado,7,9
-5,California,8,10
-5,Delaware,9,6
-5,West Virginia,10,7
-5,Nevada,11,14
-5,Virginia,12,13
-5,South Carolina,13,11
-5,Kentucky,14,15
-5,Hawaii,15,12
-5,Washington,16,16
-5,Kansas,17,17
-5,Louisiana,18,18
-5,North Carolina,19,21
-5,Minnesota,20,23
-5,Arkansas,21,22
-5,New Hampshire,22,19
-5,Maine,23,20
-5,Texas,24,24
-5,Mississippi,25,25
-5,Wisconsin,26,28
-5,Georgia,27,27
-5,Vermont,28,26
-5,Nebraska,29,32
-5,Illinois,30,30
-5,Missouri,31,29
+5,Arizona,4,4
+5,California,5,10
+5,Colorado,6,9
+5,Oregon,7,5
+5,Nevada,8,14
+5,Virginia,9,13
+5,South Carolina,10,11
+5,Delaware,11,6
+5,Hawaii,12,12
+5,West Virginia,13,7
+5,Kansas,14,17
+5,Washington,15,16
+5,Kentucky,16,15
+5,Louisiana,17,18
+5,New Hampshire,18,19
+5,Arkansas,19,22
+5,Maine,20,20
+5,North Carolina,21,21
+5,Mississippi,22,25
+5,Texas,23,24
+5,Minnesota,24,23
+5,Vermont,25,26
+5,Georgia,26,27
+5,Wisconsin,27,28
+5,Illinois,28,30
+5,Alabama,29,33
+5,Missouri,30,29
+5,Nebraska,31,32
 5,Iowa,32,34
-5,Alabama,33,33
-5,Tennessee,34,31
+5,Florida,33,37
+5,Oklahoma,34,38
 5,Michigan,35,35
-5,Florida,36,37
-5,Oklahoma,37,38
+5,Tennessee,36,31
+5,District of Columbia,37,8
 5,Ohio,38,39
-5,New York,39,42
-5,Utah,40,36
+5,Utah,39,36
+5,New York,40,42
 5,Indiana,41,41
 5,Idaho,42,40
-5,Montana,43,44
-5,Maryland,44,43
+5,Maryland,43,43
+5,Montana,44,44
 5,Connecticut,45,45
 5,Rhode Island,46,46
-5,North Dakota,47,49
-5,Massachusetts,48,47
-5,Pennsylvania,49,48
-5,South Dakota,50,51
-5,New Jersey,51,50
+5,Massachusetts,47,47
+5,Pennsylvania,48,48
+5,North Dakota,49,49
+5,New Jersey,50,50
+5,South Dakota,51,51
