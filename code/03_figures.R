@@ -75,6 +75,12 @@ connect_circles_wrapper <- function(x1, y1, x2, y2,r=.5,scale=.2,...){
   curve( plogis( x, scale = scale, loc = (x1 + x2) /2 ) * (y2-y1) + y1, 
          x1, x2, add = TRUE, ...)
 }
+
+connect_circles_segment <- function(x1, y1, x2, y2,r=.5,scale=.2,...){
+  x1 <- x1 + r
+  x2 <- x2 - r
+  segments(x0=x1,y0=y1,x1=x2,y1=y2,...)
+}
 plot_data <- 
   cmp |> 
   full_join(codes, by = join_by(state)) |> 
@@ -101,14 +107,21 @@ for (s in unique(plot_data$state_code)){
                 y = state_chunk$rnk_std[p],
                 r = .5,
                 fill = state_chunk$chamber,
-                color = state_chunk$governor)
+                color = state_chunk$governor,
+                lwd=2)
   }
   for (p in 1:4){
-    connect_circles_wrapper(x1 = p*10,
+    # connect_circles_wrapper(x1 = p*10,
+    #                         y1 = state_chunk$rnk_std[p],
+    #                         x2 = (p+1)*10,
+    #                         y2 = state_chunk$rnk_std[p+1],
+    #                         r = .4,
+    #                         scale = .7)
+    connect_circles_segment(x1 = p*10,
                             y1 = state_chunk$rnk_std[p],
                             x2 = (p+1)*10,
                             y2 = state_chunk$rnk_std[p+1],
-                            r = .4,
-                            scale = .8)
+                            r = .5,
+                            col = state_chunk$governor[p])
   }
 }
