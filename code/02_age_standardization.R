@@ -110,10 +110,7 @@ std2 <-
   mutate(rnk_std = 1:n()) %>% 
   arrange(phase, rnk_std)
 
-std2 |> 
-  ggplot(aes(x = phase, y = rnk_std, group = state)) +
-  geom_line() +
-  theme_minimal()
+
 
 exc_wlf <- read_csv("data_input/excess_estimates_by_state_and_phase.csv")
 
