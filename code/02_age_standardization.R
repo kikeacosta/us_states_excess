@@ -110,8 +110,6 @@ std2 <-
   mutate(rnk_std = 1:n()) %>% 
   arrange(phase, rnk_std)
 
-
-
 exc_wlf <- read_csv("data_input/excess_estimates_by_state_and_phase.csv")
 
 exc_wlf2 <- 
