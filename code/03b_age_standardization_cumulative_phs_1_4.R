@@ -246,3 +246,10 @@ ggsave("figures/scatter_plot_prepand_pand_excess.png",
        w = 5,
        h = 5)
 
+tt <- 
+  exc_pre3 %>% 
+  spread(exc_typ, exc_r) %>% 
+  mutate(ratio = exc_pre_r/exc_r)
+
+tt %>% 
+  summarise(r_av = mean(ratio))
