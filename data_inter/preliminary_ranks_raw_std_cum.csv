@@ -1,52 +1,52 @@
 state,rnk_exc_std,rnk_psc_std,rnk_exc_raw,rnk_psc_raw
-Mississippi,1,5,3,5
-District of Columbia,2,21,4,13
-New Mexico,3,2,2,3
-West Virginia,4,7,1,6
-Alaska,5,1,14,1
-South Carolina,6,8,5,10
+Mississippi,1,4,3,5
+District of Columbia,2,20,4,13
+West Virginia,3,7,1,6
+New Mexico,4,2,2,3
+South Carolina,5,8,5,10
+Georgia,6,9,16,12
 Louisiana,7,6,7,7
-Georgia,8,11,16,12
+Alaska,8,1,14,1
 Arizona,9,3,8,2
 Kentucky,10,16,9,17
-Arkansas,11,14,10,14
-Texas,12,12,19,11
-Wyoming,13,4,6,4
-Tennessee,14,23,12,20
-Nevada,15,10,17,9
-Alabama,16,20,11,21
-Oklahoma,17,19,13,22
-North Carolina,18,22,21,23
-Delaware,19,18,15,18
-Colorado,20,15,25,15
-Virginia,21,13,24,16
-Indiana,22,29,22,29
-Missouri,23,27,18,27
-California,24,9,28,8
-Ohio,25,30,20,31
-Kansas,26,24,23,24
-Michigan,27,28,29,28
-New York,28,17,26,19
-Illinois,29,25,31,25
-Oregon,30,31,30,30
-Florida,31,26,27,26
-Maryland,32,32,41,32
+Arkansas,11,13,10,14
+Tennessee,12,22,12,20
+Texas,13,12,19,11
+Oklahoma,14,17,13,22
+Alabama,15,19,11,21
+Nevada,16,10,17,9
+Wyoming,17,5,6,4
+North Carolina,18,23,21,23
+Indiana,19,28,22,29
+Delaware,20,21,15,18
+Missouri,21,27,18,27
+Virginia,22,14,24,16
+Colorado,23,18,25,15
+Ohio,24,30,20,31
+California,25,11,28,8
+Michigan,26,29,29,28
+Kansas,27,26,23,24
+New York,28,15,27,19
+Illinois,29,24,31,25
+Oregon,30,33,30,30
+Florida,31,25,26,26
+Maryland,32,31,41,32
 Idaho,33,36,38,35
-Wisconsin,34,34,35,33
-Utah,35,40,48,40
-Montana,36,39,32,36
-Washington,37,35,40,34
-Iowa,38,41,37,42
-South Dakota,39,43,34,41
-Connecticut,40,33,39,38
-Minnesota,41,38,43,37
-North Dakota,42,45,33,43
-New Jersey,43,37,44,39
-Maine,44,44,36,44
-New Hampshire,45,42,45,45
-Pennsylvania,46,47,42,47
+Utah,34,39,48,40
+South Dakota,35,37,34,41
+Wisconsin,36,35,35,33
+Montana,37,38,32,36
+Connecticut,38,32,39,38
+North Dakota,39,43,33,43
+New Jersey,40,34,44,39
+Iowa,41,42,37,42
+Washington,42,40,40,34
+Pennsylvania,43,46,42,47
+Minnesota,44,41,43,37
+Maine,45,45,36,44
+New Hampshire,46,44,45,45
 Nebraska,47,49,47,49
-Hawaii,48,46,46,46
+Hawaii,48,47,46,46
 Vermont,49,48,49,48
-Rhode Island,50,50,50,50
-Massachusetts,51,51,51,51
+Rhode Island,50,51,50,50
+Massachusetts,51,50,51,51

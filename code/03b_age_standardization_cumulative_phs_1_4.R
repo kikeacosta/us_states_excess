@@ -1,16 +1,17 @@
 rm (list = ls())
 source("code/00_setup.R")
 
-# adjusting rates denominators for all 5 phases
-# it includes a fraction of 2020
-ph2020 <- ymd(c("2020-03-07", "2020-12-31"))
-# all years 2021-2022
-# and a fraction of 2023
-ph2023 <- ymd(c("2023-01-01", "2023-07-02"))
+# phases definitions
+# phases for adjusting rates denominators
+ph1 <- ymd(c("2020-03-07", "2020-06-13"))
+ph2 <- ymd(c("2020-06-20", "2021-03-13"))
+ph3 <- ymd(c("2021-03-20", "2022-03-19"))
+ph4 <- ymd(c("2022-03-26", "2023-02-04"))
+ph5 <- ymd(c("2023-02-11", "2023-07-02"))
 
-# fraction of years to estimate person-years
-fr2020 <- interval(ph2020[1], ph2020[2]) %>% as.numeric('years')
-fr2023 <- interval(ph2023[1], ph2023[2]) %>% as.numeric('years')
+# only for phases 1-4
+fr2020 <- interval(ymd("2020-03-07"), ymd("2020-12-31")) %>% as.numeric('years')
+fr2023 <- interval(ymd("2023-01-01"), ymd("2023-02-04")) %>% as.numeric('years')
 
 # US population by age
 # will be used as the reference population for standardization 
@@ -39,7 +40,8 @@ pop_sts <- read_csv("data_inter/pop_state_age_2013_2024.csv")
 # calculating population exposures by state in person-years for all phases
 pop_sts2 <- 
   pop_sts %>% 
-  filter(year %in% 2020:2023) %>% 
+  filter(year %in% 2020:2022) %>% 
+  # adding the fraction for each year
   mutate(fr = case_when(year == 2020 ~ fr2020,
                         year == 2023 ~ fr2023,
                         TRUE ~ 1)) %>% 
@@ -57,6 +59,7 @@ exc <- read_csv("data_inter/excess_state_phase_age.csv")
 # merging excess deaths and exposures (by age)
 exc2 <- 
   exc %>% 
+  filter(phase %in% 1:4) %>% 
   group_by(state, age) %>% 
   summarise(dx = sum(dx),
             bsn = sum(bsn),
@@ -66,14 +69,14 @@ exc2 <-
   # this is an approximation, taking info from just 1 pop estimate,
   # can be refined
   mutate(# excess rates (exc_r) expressed as per 100k, by age
-         exc_r = 1e5 * exc / exposure,
-         # baseline rates (bsn_r) expressed as per 100k, by age
-         bsn_r = 1e5 * bsn / exposure,
-         # death rates (mx) expressed as per 100k, by age
-         mx = 1e5 * dx / exposure
+    exc_r = 1e5 * exc / exposure,
+    # baseline rates (bsn_r) expressed as per 100k, by age
+    bsn_r = 1e5 * bsn / exposure,
+    # death rates (mx) expressed as per 100k, by age
+    mx = 1e5 * dx / exposure
   )
 
-write_csv(exc2, "data_inter/excess_rates_by_age_all_period.csv")
+write_csv(exc2, "data_inter/excess_rates_by_age_phases_1_4.csv")
 
 # age-specific excess deaths according to standard population
 std <- 
@@ -134,7 +137,7 @@ exc_wlf <-
   arrange(-psc) %>% 
   mutate(rnk_psc_raw = 1:n()) %>% 
   arrange(rnk_exc_raw)
-  
+
 
 # comparing standardized and raw ranks
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -193,12 +196,53 @@ exc_pre3 <-
   select(state, exc_r, exc_pre_r) %>% 
   gather(-state, key = exc_typ, value = exc_r)
 
+cols <- c("#fb8500", "black")
 
-ggplot(exc_pre3, aes(fill=exc_typ, y=exc_r, x=state)) + 
+ggplot(exc_pre3, aes(fill=exc_typ, y=exc_r, x=reorder(state, exc_r))) + 
   geom_bar(position="dodge", stat="identity")+
+  scale_fill_manual(values = cols)+
   coord_flip()+
   theme_bw()
 
 ggsave("figures/excess_prepandemic_pandemic.png",
        w = 7,
        h = 10)
+
+exc_pre3 %>% 
+  mutate(exc_typ = factor(exc_typ, levels = c("exc_pre_r", "exc_r"))) %>% 
+  ggplot(aes(fill=exc_typ, y=exc_r, x=reorder(state, exc_r))) + 
+  geom_bar(position="stack", stat="identity")+
+  scale_fill_manual(values = cols, labels = c("Pre-pandemic excess",
+                                              "Pandemic excesss"))+
+  coord_flip()+
+  labs(y = "Excess death rates",
+       fill = "",
+       x = "")+
+  theme_bw()
+
+ggsave("figures/excess_prepandemic_pandemic_v2.png",
+       w = 7,
+       h = 7)
+
+
+exc_pre3 %>% 
+  spread(exc_typ, exc_r) %>% 
+  ggplot()+
+  geom_point(aes(exc_pre_r, exc_r))+
+  theme_bw()+
+  labs(y = "Pandemic excess",
+       x = "Pre-pandemic excess")
+  
+
+library("ggpubr")
+exc_pre3 %>% 
+  spread(exc_typ, exc_r) %>% 
+  ggscatter(x = "exc_pre_r", y = "exc_r", 
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = "pearson",
+          xlab = "Pre-pandemic excess", ylab = "Pandemic excess")
+
+ggsave("figures/scatter_plot_prepand_pand_excess.png",
+       w = 5,
+       h = 5)
+
