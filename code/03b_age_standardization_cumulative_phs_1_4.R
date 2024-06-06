@@ -236,12 +236,12 @@ exc_pre3 %>%
 
 library("ggpubr")
 exc_pre3 %>% 
+  #filter(state != "District of Columbia") |> 
   spread(exc_typ, exc_r) %>% 
   ggscatter(x = "exc_pre_r", y = "exc_r", 
           add = "reg.line", conf.int = TRUE, 
           cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Pre-pandemic excess", ylab = "Pandemic excess")
-
+          xlab = "Pre-pandemic excess", ylab = "Pandemic excess") 
 ggsave("figures/scatter_plot_prepand_pand_excess.png",
        w = 5,
        h = 5)
