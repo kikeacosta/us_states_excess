@@ -39,6 +39,16 @@ pop_sts2 <-
   filter(year %in% 2020:2023) %>% 
   rename(year_pop = year)
 
+# calculating population exposures in person-years for all phases
+pop_sts2 <- 
+  pop_sts %>% 
+  filter(year %in% 2020:2023) %>% 
+  rename(year_pop = year)
+
+
+
+
+
 # excess estimates by state and age
 exc <- read_csv("data_inter/excess_state_phase_age.csv")
 
@@ -61,31 +71,42 @@ exc2 <-
                            phase == 5 ~ d5,
                            TRUE ~ 0),
          exposure = pop * yr_fr,
-         # rates (exc_r) expressed as per 100k, by age
-         exc_r = 1e5 * exc / exposure)
+         # excess rates (exc_r) expressed as per 100k, by age
+         exc_r = 1e5 * exc / exposure,
+         # baseline rates (bsn_r) expressed as per 100k, by age
+         bsn_r = 1e5 * bsn / exposure,
+         # death rates (mx) expressed as per 100k, by age
+         mx = 1e5 * dx / exposure
+  )
 
 # age-specific excess deaths according to standard population
 std <- 
   exc2 %>% 
-  select(phase, state, age, exc_r) %>% 
+  select(phase, state, age, exc_r, bsn_r, mx) %>% 
   left_join(pop_us2, by = join_by(age)) %>% 
-  # remember to undo the 100k units of exc_r
-  mutate(exc_std = exc_r * pop / 1e5)
-
-
+  # remember to undo the 100k units of rates
+  mutate(exc_std = exc_r * pop / 1e5,
+         bsn_std = bsn_r * pop / 1e5,
+         dx_std = mx * pop / 1e5,
+  )
 
 std2 <- 
   std %>% 
-  # calculate age-standardized excess rates
+  # calculate age-standardized obs death, baseline, and excess rates
   group_by(phase, state) %>% 
   summarise(exc_std = sum(exc_std),
+            bsn_std = sum(bsn_std),
+            dx_std = sum(dx_std),
             pop = sum(pop), 
             .groups = "drop") %>% 
   # once again age-standardized excess rate scaled up to pre 100k
   # TR: why / pop?
-  mutate(exc_std_r = 1e5 * exc_std / pop) %>% 
+  mutate(exc_r_std = 1e5 * exc_std / pop,
+         bsn_r_std = 1e5 * bsn_std / pop,
+         mx_std = 1e5 * dx_std / pop,
+         psc = exc_std / bsn_std) %>% 
   group_by(phase) %>% 
-  arrange(-exc_std_r) %>% 
+  arrange(-exc_r_std) %>% 
   mutate(rnk_std = 1:n()) %>% 
   arrange(phase, rnk_std)
 
@@ -113,3 +134,20 @@ cmp <-
             join_by(phase, state))
 
 write_csv(cmp, "data_inter/preliminary_ranks_raw_std.csv")
+cmp <- read_csv("data_inter/preliminary_ranks_raw_std.csv")
+
+# average rank change when adjusting for age
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+tt <- cmp |>
+  select(-rnk_raw) %>% 
+  spread(phase, rnk_std) %>% 
+  select(-`5`) |>
+  mutate(ch1 = abs(`1` - `2`),
+         ch2 = abs(`2` - `3`),
+         ch3 = abs(`3` - `4`))
+
+tt |>
+  summarise(ch1 = mean(ch1),
+            ch2 = mean(ch2),
+            ch3 = mean(ch3),
+  )
