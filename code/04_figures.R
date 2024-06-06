@@ -1,3 +1,8 @@
+rm (list = ls())
+source("code/00_setup.R")
+
+cmp <- read_csv("data_inter/preliminary_ranks_raw_std.csv")
+
 cmp |> 
   pivot_longer(3:4, names_to = "variant", values_to = "rank") |> 
   ggplot(aes(x = variant, y = rank, group = state)) +
@@ -60,16 +65,37 @@ codes <- read_csv("data_input/us_state_codes.csv")
   tt |> 
     ggplot(aes(x = phase, y = rnk_std-1, group = state)) +
     geom_bump(alpha = .5) +
-    theme_minimal() +
-    geom_point(color = "white",
-               size = 5) +
+    # theme_minimal() +
+    theme_bw()+
+    # geom_point(color = "white",
+    #            size = 5) +
     geom_point(aes(color = governor, fill = chamber), 
-               size = 6, 
+               size = 5, 
                pch = 21) +
+    geom_text(aes(label = state_code), size = 2.5)+
     scale_color_identity() +
     scale_fill_identity()
   
-  
   ggsave("figures/test2.png",
+         w = 6, h = 10)
+  
+  
+  tt |> 
+    ggplot(aes(x = phase, y = rnk_std-1, group = state)) +
+    geom_bump(aes(color = governor), alpha = .5) +
+    # theme_minimal() +
+    theme_bw()+
+    # geom_point(color = "white",
+    #            size = 5) +
+    geom_point(aes(color = governor, fill = chamber), 
+               size = 5, 
+               pch = 21,
+               alpha = 0.8) +
+    geom_text(aes(label = state_code), size = 2)+
+    scale_color_identity() +
+    scale_fill_identity()
+
+  
+  ggsave("figures/test3.png",
          w = 6, h = 10)
   
