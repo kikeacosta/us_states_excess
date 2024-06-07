@@ -2,8 +2,12 @@ cmp |>
   pivot_longer(3:4, names_to = "variant", values_to = "rank") |> 
   ggplot(aes(x = variant, y = rank, group = state)) +
   geom_line() +
-  facet_wrap(~phase)  + 
+  facet_wrap(~phase, ncol = 5)  + 
   theme_minimal()
+
+ggsave("figures/rank_change_age_stand.png",
+       w = 8, h = 3)
+
 
 
 polit <- read_csv("data_input/woolf_tabs3.csv")
