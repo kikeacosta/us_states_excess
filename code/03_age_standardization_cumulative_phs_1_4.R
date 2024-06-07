@@ -9,7 +9,10 @@ ph3 <- ymd(c("2021-03-20", "2022-03-19"))
 ph4 <- ymd(c("2022-03-26", "2023-02-04"))
 ph5 <- ymd(c("2023-02-11", "2023-07-02"))
 
-# only for phases 1-4
+# only for phases 1-4, 
+# excluding phase 5 (less than 500 excess deaths in the whole US!!)
+
+# fractions for incomplete years 2020 and 2023
 fr2020 <- interval(ymd("2020-03-07"), ymd("2020-12-31")) %>% as.numeric('years')
 fr2023 <- interval(ymd("2023-01-01"), ymd("2023-02-04")) %>% as.numeric('years')
 
@@ -188,25 +191,56 @@ exc_pre2 <-
             exposure = sum(exposure), 
             .groups = "drop") %>% 
   mutate(exc_r = 1e5*exc_std/exposure,
-         exc_pre_r = 1e5*exc_pre/exposure)
+         exc_pre_r = 1e5*exc_pre/exposure) %>% 
+  arrange(exc_std) %>% 
+  mutate(rnk = 1:n())
 
 
 exc_pre3 <- 
   exc_pre2 %>% 
-  select(state, exc_r, exc_pre_r) %>% 
-  gather(-state, key = exc_typ, value = exc_r)
+  select(state, rnk, exc_r, exc_pre_r) %>% 
+  gather(exc_r, exc_pre_r, key = exc_typ, value = exc_r)
+
+exc_pre3 %>% 
+  filter(exc_typ == "exc_r") %>% 
+  ggplot(aes(y=exc_r, x=reorder(state, rnk))) + 
+  geom_bar(position="dodge", stat="identity", fill = "black")+
+  # scale_fill_manual(values = cols)+
+  coord_flip()+
+  labs(y = "Age standardized excess death rates")+
+  theme_bw()+
+  theme(
+    axis.title.y = element_blank(),
+    )
+
+ggsave("figures/excess_pandemic.png",
+       w = 5,
+       h = 10)
 
 cols <- c("#fb8500", "black")
 
-ggplot(exc_pre3, aes(fill=exc_typ, y=exc_r, x=reorder(state, exc_r))) + 
-  geom_bar(position="dodge", stat="identity")+
-  scale_fill_manual(values = cols)+
+exc_pre3 %>% 
+  mutate(exc_typ = factor(exc_typ, levels = c("exc_pre_r", "exc_r"))) %>% 
+  ggplot(aes(fill=exc_typ, y=exc_r, x=reorder(state, rnk))) + 
+  geom_bar(position="stack", stat="identity")+
+  scale_fill_manual(values = cols, labels = c("Pre-pandemic excess",
+                                              "Pandemic excesss"))+
   coord_flip()+
-  theme_bw()
+  labs(y = "Excess death rates",
+       fill = "",
+       x = "")+
+  theme_bw()+
+  theme(legend.position = c(.8, .2),
+        legend.background = element_blank())
 
-ggsave("figures/excess_prepandemic_pandemic.png",
+ggsave("figures/excess_prepandemic_pandemic_v2.png",
        w = 7,
-       h = 10)
+       h = 7)
+
+
+
+
+
 
 exc_pre3 %>% 
   mutate(exc_typ = factor(exc_typ, levels = c("exc_pre_r", "exc_r"))) %>% 
@@ -218,7 +252,9 @@ exc_pre3 %>%
   labs(y = "Excess death rates",
        fill = "",
        x = "")+
-  theme_bw()
+  theme_bw()+
+  theme(legend.position = c(.8, .2),
+        legend.background = element_blank())
 
 ggsave("figures/excess_prepandemic_pandemic_v2.png",
        w = 7,
@@ -245,4 +281,149 @@ exc_pre3 %>%
 ggsave("figures/scatter_plot_prepand_pand_excess.png",
        w = 5,
        h = 5)
+
+tt <- 
+  exc_pre3 %>% 
+  spread(exc_typ, exc_r) %>% 
+  mutate(ratio = exc_pre_r/exc_r)
+
+tt %>% 
+  summarise(r_av = mean(ratio))
+
+
+
+# relative difference with the average before and during the pandemic
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+polit <- read_csv("data_input/woolf_tabs3.csv")
+codes <- read_csv("data_input/us_state_codes.csv")
+
+pol2 <- 
+  polit %>% 
+  filter(phase %in% 1:2) %>% 
+  group_by(state) %>% 
+  summarise(pol = round(mean(polit)))
+
+r <- 
+  exc_pre2 %>% 
+  select(state, dx_std, bsn_std, exc_std, exposure) %>% 
+  mutate(mx = 1e5*dx_std/exposure,
+         bsn_r = 1e5*bsn_std/exposure,
+         exc_r = 1e5*exc_std/exposure,
+         mx_av = mean(mx),
+         exc_av = mean(exc_r),
+         bsn_r_av = mean(bsn_r),
+         rr_pre = bsn_r/bsn_r_av,
+         rr_pan = mx/mx_av,
+         rr_exc = exc_r/exc_av) %>% 
+  left_join(pol2) %>% 
+  left_join(codes)
+
+# %>% 
+#   mutate(pol = pol %>% as.factor())
+# 
+
+
+r %>% 
+  filter(state != "District of Columbia") %>% 
+  ggscatter(x = "rr_pre", y = "rr_exc", 
+            add = "reg.line", conf.int = TRUE, 
+            cor.coef = TRUE, cor.method = "pearson",
+            xlab = "Pre-pandemic relative risk", ylab = "Pandemic relative risk") 
+
+r %>% 
+  ggscatter(x = "rr_pre", y = "rr_pan", 
+            add = "reg.line", conf.int = TRUE, 
+            cor.coef = TRUE, cor.method = "pearson",
+            xlab = "Pre-pandemic relative risk", ylab = "Pandemic relative risk") 
+
+
+r %>% 
+  filter(state != "District of Columbia") %>% 
+  ggscatter(x = "rr_pre", y = "rr_pan", 
+            add = "reg.line", conf.int = TRUE, 
+            cor.coef = TRUE, cor.method = "pearson",
+            xlab = "Pre-pandemic relative risk", ylab = "Pandemic relative risk") 
+
+
+r %>% 
+  filter(state != "District of Columbia") %>% 
+  ggscatter(x = "rr_pre", y = "rr_pan",
+            fill = "pol",
+            add = "reg.line", conf.int = TRUE, 
+            cor.coef = TRUE, cor.method = "pearson",
+            xlab = "Pre-pandemic relative risk", ylab = "Pandemic relative risk",
+            palette = c("black", "red", "blue", "purple")) 
+
+tt <- 
+  r %>% 
+  mutate(governor = if_else(pol <= 2, "#3157d4", "#db2a2a"),
+         governor = if_else(state == "Nebraska", "#db2a2a", governor),
+         governor = if_else(state == "District of Columbia", "#3157d4",governor),
+         chamber = case_when(pol == 1 ~ "#3157d450",
+                             pol == 2 ~ "#a618c950",
+                             pol == 3 ~ "#a618c950",
+                             pol == 4 ~ "#db2a2a50",
+                             TRUE ~ "#a618c950"),
+         gov = ifelse(pol <= 2, "dem","rep"),
+         gov = case_when(state == "Nebraska" ~ "rep",
+                      state == "District of Columbia" ~ "dem",
+                      TRUE ~ gov))
+
+cols <- c("#3157d4", "#db2a2a")
+
+tt %>% 
+  filter(state != "District of Columbia") %>% 
+  ggplot(aes(rr_pre, rr_pan)) +
+  # stat_summary(fun.data= mean_cl_normal) + 
+  # geom_smooth(method='lm', col = "black", fill = "transparent")+
+  geom_segment(x = 0.7, xend = 1.3, y = 0.7, yend = 1.3)+
+  coord_fixed()+
+  # scale_fill_manual(values = cols)+
+  # scale_color_manual(values = cols)+
+  scale_color_identity() +
+  scale_fill_identity()+
+  geom_text(aes(label = state_code), size = 4)+
+  geom_point(aes(color = governor, fill = chamber), 
+             size = 6, 
+             pch = 21,
+             stroke = 2,
+             alpha = 0.8)+
+  geom_text(aes(label = state_code))+
+  geom_vline(xintercept = 1, lty = "dashed")+
+  geom_hline(yintercept = 1, lty = "dashed")+
+  scale_x_continuous(breaks = seq(0, 2, .1))+
+  scale_y_continuous(breaks = seq(0, 2, .1))+
+  labs(x = "Pre-pandemic relative risk", y = "Pandemic relative risk")+
+  theme_bw()+
+  theme(axis.text = element_text(size = 15),
+        axis.title = element_text(size = 20),
+  )
+
+ggsave("figures/fake_mess.png",
+       w = 10, h = 10)
+# 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
