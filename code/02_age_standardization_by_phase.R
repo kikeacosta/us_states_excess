@@ -19,16 +19,23 @@ d5 <- interval(ph5[1], ph5[2]) %>% as.numeric('years')
 # will be used as the reference population for standardization 
 pop_us <- read_tsv("data_input/pop_us_agex5_2015_2023.txt")
 
+# keeping only the age structure as the reference 
+# then distribute state-specific all population into ages
 pop_us2 <- 
   pop_us %>% 
   select(year = 3,
          age = 5,
-         pop = 6) %>% 
+         pop = 6) %>%
+  drop_na(year) %>% 
   mutate(age = parse_number(age),
          age = if_else(age < 15,0,age)) %>% 
   filter(year == 2020) %>% 
   group_by(age) %>% 
-  summarise(pop = sum(pop),.groups = "drop")
+  summarise(pop = sum(pop),
+            .groups = "drop") %>% 
+  mutate(cx = pop/sum(pop)) %>% 
+  select(-pop)
+
 
 # Population by state by age
 pop_sts <- read_csv("data_inter/pop_state_age_2013_2024.csv")
@@ -47,12 +54,11 @@ pop_sts2 <-
 
 
 
-
-
 # excess estimates by state and age
 exc <- read_csv("data_inter/excess_state_phase_age.csv")
 
 # merging excess deaths and exposures (by age)
+# to estimate rates (excess, baseline, observed mortality)
 exc2 <- 
   exc %>% 
   mutate(year_pop = case_when(phase == 1 ~ 2020,
@@ -79,15 +85,28 @@ exc2 <-
          mx = 1e5 * dx / exposure
   )
 
-# age-specific excess deaths according to standard population
+# total exposure for all ages by state and phase
+# will be breakdown using the age structure of the reference population
+pop_sts_tot <- 
+  exc2 %>% 
+  group_by(phase, state) %>% 
+  summarise(exp_tot = sum(exposure),
+            .groups = "drop")
+
+
+# age-specific excess deaths according to the age structure of the 
+# standard population (US in each phase)
 std <- 
   exc2 %>% 
   select(phase, state, age, exc_r, bsn_r, mx) %>% 
   left_join(pop_us2, by = join_by(age)) %>% 
+  left_join(pop_sts_tot, by = join_by(phase, state)) %>% 
   # remember to undo the 100k units of rates
-  mutate(exc_std = exc_r * pop / 1e5,
-         bsn_std = bsn_r * pop / 1e5,
-         dx_std = mx * pop / 1e5,
+  mutate(
+    exp_std = exp_tot * cx,
+    exc_std = exc_r * exp_std / 1e5,
+         bsn_std = bsn_r * exp_std / 1e5,
+         dx_std = mx * exp_std / 1e5,
   )
 
 std2 <- 
@@ -97,18 +116,23 @@ std2 <-
   summarise(exc_std = sum(exc_std),
             bsn_std = sum(bsn_std),
             dx_std = sum(dx_std),
-            pop = sum(pop), 
+            exp_std = sum(exp_std), 
             .groups = "drop") %>% 
   # once again age-standardized excess rate scaled up to pre 100k
   # TR: why / pop?
-  mutate(exc_r_std = 1e5 * exc_std / pop,
-         bsn_r_std = 1e5 * bsn_std / pop,
-         mx_std = 1e5 * dx_std / pop,
+  mutate(exc_r_std = 1e5 * exc_std / exp_std,
+         bsn_r_std = 1e5 * bsn_std / exp_std,
+         mx_std = 1e5 * dx_std / exp_std,
          psc = exc_std / bsn_std) %>% 
   group_by(phase) %>% 
   arrange(-exc_r_std) %>% 
   mutate(rnk_std = 1:n()) %>% 
-  arrange(phase, rnk_std)
+  arrange(phase, rnk_std) %>% 
+  ungroup()
+
+std2 %>% 
+  summarise(exc_std = sum(exc_std))
+
 
 exc_wlf <- read_csv("data_input/excess_estimates_by_state_and_phase.csv")
 
@@ -149,3 +173,4 @@ tt |>
             ch2 = mean(ch2),
             ch3 = mean(ch3),
   )
+

@@ -34,7 +34,10 @@ pop_us2 <-
                         TRUE ~ 1)) %>% 
   # calculating exposures for the whole period 2020-03-07 - 2023-07-02
   group_by(age) %>% 
-  summarise(exposure = sum(pop * fr),.groups = "drop")
+  summarise(exposure = sum(pop * fr),
+            .groups = "drop") %>% 
+  mutate(cx = exposure/sum(exposure)) %>% 
+  select(-exposure)
 
 
 # Population by state by age
@@ -43,7 +46,7 @@ pop_sts <- read_csv("data_inter/pop_state_age_2013_2024.csv")
 # calculating population exposures by state in person-years for all phases
 pop_sts2 <- 
   pop_sts %>% 
-  filter(year %in% 2020:2022) %>% 
+  filter(year %in% 2020:2023) %>% 
   # adding the fraction for each year
   mutate(fr = case_when(year == 2020 ~ fr2020,
                         year == 2023 ~ fr2023,
@@ -53,7 +56,10 @@ pop_sts2 <-
   summarise(exposure = sum(pop * fr),.groups = "drop")
 
 
-
+pop_sts_tot <- 
+  pop_sts2 %>% 
+  group_by(state) %>% 
+  summarise(exp_tot = sum(exposure),.groups = "drop")
 
 
 # excess estimates by state and age
@@ -81,15 +87,38 @@ exc2 <-
 
 write_csv(exc2, "data_inter/excess_rates_by_age_phases_1_4.csv")
 
+
+tot_rates <- 
+  exc2 %>% 
+  group_by(state) %>% 
+  summarise(exc = sum(exc),
+            bsn = sum(bsn),
+            exposure = sum(exposure)) %>% 
+  mutate(exc_r = 1e5*exc/exposure,
+         psc = exc/bsn) %>%
+  arrange(exc_r)
+
+
+tot_rates %>% 
+  summarise(psc_av = mean(psc))
+
 # age-specific excess deaths according to standard population
+
+# using the age structure of the US
+# and the total population in each state
+
 std <- 
   exc2 %>% 
   select(state, age, exc_r, bsn_r, mx) %>% 
   left_join(pop_us2, by = join_by(age)) %>% 
+  left_join(pop_sts_tot, by = join_by(state)) %>% 
+  
   # remember to undo the 100k units of rates
-  mutate(exc_std = exc_r * exposure / 1e5,
-         bsn_std = bsn_r * exposure / 1e5,
-         dx_std = mx * exposure / 1e5,
+  mutate(
+    exp_std = exp_tot * cx,
+    exc_std = exc_r * exp_std / 1e5,
+         bsn_std = bsn_r * exp_std / 1e5,
+         dx_std = mx * exp_std / 1e5,
   )
 
 std2 <- 
@@ -99,7 +128,7 @@ std2 <-
   summarise(exc_std = sum(exc_std),
             bsn_std = sum(bsn_std),
             dx_std = sum(dx_std),
-            exposure = sum(exposure), 
+            exposure = sum(exp_std), 
             .groups = "drop") %>% 
   # once again age-standardized excess rate scaled up to pre 100k
   # TR: why / pop?
@@ -118,6 +147,15 @@ std2 |>
   ggplot(aes(x = psc, y = state)) +
   geom_point() +
   theme_minimal()
+
+std2 %>% 
+  group_by() %>% 
+  summarize(psc_av = mean(psc))
+
+std2 %>% 
+  group_by() %>% 
+  summarize(exc = sum(exc_std))
+
 
 
 # looking at raw ranking
@@ -140,6 +178,7 @@ exc_wlf <-
   arrange(-psc) %>% 
   mutate(rnk_psc_raw = 1:n()) %>% 
   arrange(rnk_exc_raw)
+
 
 
 # comparing standardized and raw ranks
@@ -165,9 +204,12 @@ bst <-
   filter(bsn_r == min(bsn_r)) %>% 
   arrange(age) 
 
+bst
+
 bst2 <- 
   bst %>% 
   select(age, bsn_bst_r = bsn_r)
+
 
 # pre-pandemic excess
 # ~~~~~~~~~~~~~~~~~~~
@@ -175,9 +217,9 @@ exc_pre <-
   std %>% 
   # joining each state with the best baseline practice for each age
   left_join(bst2, by = join_by(age)) %>% 
-  mutate(bsn_bst = bsn_bst_r * exposure / 1e5,
+  mutate(bsn_bst = bsn_bst_r * exp_std / 1e5,
          exc_pre_r = bsn_r - bsn_bst_r,
-         exc_pre = exc_pre_r * exposure / 1e5)
+         exc_pre = exc_pre_r * exp_std / 1e5)
 
 # all ages together
 exc_pre2 <- 
@@ -188,16 +230,35 @@ exc_pre2 <-
             exc_std = sum(exc_std),
             bsn_bst = sum(bsn_bst),
             exc_pre = sum(exc_pre),
-            exposure = sum(exposure), 
+            exposure = sum(exp_std), 
+            .groups = "drop") %>% 
+  mutate(exc_r = 1e5*exc_std/exposure,
+         exc_pre_r = 1e5*exc_pre/exposure) %>% 
+  arrange(exc_r) %>% 
+  mutate(rnk = 1:n())
+
+# all US together
+exc_pre_us <- 
+  exc_pre %>% 
+  group_by() %>% 
+  summarise(dx_std = sum(dx_std),
+            bsn_std = sum(bsn_std),
+            exc_std = sum(exc_std),
+            bsn_bst = sum(bsn_bst),
+            exc_pre = sum(exc_pre),
+            exposure = sum(exp_std), 
             .groups = "drop") %>% 
   mutate(exc_r = 1e5*exc_std/exposure,
          exc_pre_r = 1e5*exc_pre/exposure) %>% 
   arrange(exc_std) %>% 
-  mutate(rnk = 1:n())
+  mutate(rnk = 52) %>% 
+  mutate(state = "US")
 
 
 exc_pre3 <- 
   exc_pre2 %>% 
+  bind_rows(exc_pre_us) %>% 
+  arrange(rnk) %>% 
   select(state, rnk, exc_r, exc_pre_r) %>% 
   gather(exc_r, exc_pre_r, key = exc_typ, value = exc_r)
 
@@ -223,42 +284,46 @@ exc_pre3 %>%
   mutate(exc_typ = factor(exc_typ, levels = c("exc_pre_r", "exc_r"))) %>% 
   ggplot(aes(fill=exc_typ, y=exc_r, x=reorder(state, rnk))) + 
   geom_bar(position="stack", stat="identity")+
-  scale_fill_manual(values = cols, labels = c("Pre-pandemic excess",
+  scale_fill_manual(values = cols, labels = c("Pandemic-free excess",
                                               "Pandemic excesss"))+
   coord_flip()+
-  labs(y = "Excess death rates",
-       fill = "",
-       x = "")+
+  labs(y = "Age-standardized excess death rates (/100K)")+
   theme_bw()+
-  theme(legend.position = c(.8, .2),
-        legend.background = element_blank())
+  theme(legend.position = c(.75, .1),
+        legend.background = element_blank(),
+        legend.text = element_text(size = 11),
+        legend.title = element_blank(),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_blank())
 
-ggsave("figures/excess_prepandemic_pandemic_v2.png",
-       w = 7,
-       h = 7)
-
-
-
-
+ggsave("figures/excess_prepandemic_pandemic_v3.png",
+       w = 6,
+       h = 7.5)
 
 
 exc_pre3 %>% 
   mutate(exc_typ = factor(exc_typ, levels = c("exc_pre_r", "exc_r"))) %>% 
   ggplot(aes(fill=exc_typ, y=exc_r, x=reorder(state, exc_r))) + 
   geom_bar(position="stack", stat="identity")+
-  scale_fill_manual(values = cols, labels = c("Pre-pandemic excess",
+  scale_fill_manual(values = cols, labels = c("Pandemic-free excess",
                                               "Pandemic excesss"))+
   coord_flip()+
-  labs(y = "Excess death rates",
-       fill = "",
-       x = "")+
+  labs(y = "Age-standardized excess death rates (/100K)")+
   theme_bw()+
-  theme(legend.position = c(.8, .2),
-        legend.background = element_blank())
+  theme(legend.position = c(.75, .1),
+        legend.background = element_blank(),
+        legend.text = element_text(size = 11),
+        legend.title = element_blank(),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_blank())
 
 ggsave("figures/excess_prepandemic_pandemic_v2.png",
-       w = 7,
-       h = 7)
+       w = 6,
+       h = 7.5)
 
 
 exc_pre3 %>% 
@@ -317,11 +382,6 @@ r <-
          rr_exc = exc_r/exc_av) %>% 
   left_join(pol2) %>% 
   left_join(codes)
-
-# %>% 
-#   mutate(pol = pol %>% as.factor())
-# 
-
 
 r %>% 
   filter(state != "District of Columbia") %>% 

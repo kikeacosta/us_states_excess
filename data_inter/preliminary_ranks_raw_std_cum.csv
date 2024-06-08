@@ -4,13 +4,13 @@ District of Columbia,2,20,4,13
 West Virginia,3,7,1,6
 New Mexico,4,2,2,3
 South Carolina,5,8,5,10
-Georgia,6,9,16,12
-Louisiana,7,6,7,7
+Louisiana,6,6,7,7
+Georgia,7,9,16,12
 Alaska,8,1,14,1
 Arizona,9,3,8,2
 Kentucky,10,16,9,17
 Arkansas,11,13,10,14
-Tennessee,12,22,12,20
+Tennessee,12,21,12,20
 Texas,13,12,19,11
 Oklahoma,14,17,13,22
 Alabama,15,19,11,21
@@ -18,7 +18,7 @@ Nevada,16,10,17,9
 Wyoming,17,5,6,4
 North Carolina,18,23,21,23
 Indiana,19,28,22,29
-Delaware,20,21,15,18
+Delaware,20,22,15,18
 Missouri,21,27,18,27
 Virginia,22,14,24,16
 Colorado,23,18,25,15
@@ -26,10 +26,10 @@ Ohio,24,30,20,31
 California,25,11,28,8
 Michigan,26,29,29,28
 Kansas,27,26,23,24
-New York,28,15,27,19
+New York,28,15,26,19
 Illinois,29,24,31,25
 Oregon,30,33,30,30
-Florida,31,25,26,26
+Florida,31,25,27,26
 Maryland,32,31,41,32
 Idaho,33,36,38,35
 Utah,34,39,48,40
