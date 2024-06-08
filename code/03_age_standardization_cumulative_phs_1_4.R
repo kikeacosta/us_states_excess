@@ -156,7 +156,7 @@ std2 %>%
   group_by() %>% 
   summarize(exc = sum(exc_std))
 
-
+write_csv(std2, "data_inter/age_standardized_excess_rates_states.csv")
 
 # looking at raw ranking
 # ~~~~~~~~~~~~~~~~~~~~~~
@@ -262,6 +262,21 @@ exc_pre3 <-
   select(state, rnk, exc_r, exc_pre_r) %>% 
   gather(exc_r, exc_pre_r, key = exc_typ, value = exc_r)
 
+pscs <- 
+  exc_pre2 %>% 
+  mutate(psc_pre = exc_pre / bsn_bst,
+         psc_pan = exc_std / bsn_std) %>% 
+  arrange(psc_pan) %>% 
+  mutate(rnk = 1:n()) %>% 
+  bind_rows(
+    exc_pre_us %>% 
+      mutate(psc_pre = exc_pre / bsn_bst,
+             psc_pan = exc_std / bsn_std)
+              ) %>% 
+  arrange(rnk) %>% 
+  select(state, rnk, psc_pan, psc_pre) %>% 
+  gather(psc_pan, psc_pre, key = exc_typ, value = psc)
+
 exc_pre3 %>% 
   filter(exc_typ == "exc_r") %>% 
   ggplot(aes(y=exc_r, x=reorder(state, rnk))) + 
@@ -298,9 +313,9 @@ exc_pre3 %>%
         axis.title.x = element_text(size = 12),
         axis.title.y = element_blank())
 
-ggsave("figures/excess_prepandemic_pandemic_v3.png",
-       w = 6,
-       h = 7.5)
+# ggsave("figures/excess_prepandemic_pandemic_v3.png",
+#        w = 6,
+#        h = 7.5)
 
 
 exc_pre3 %>% 
@@ -321,9 +336,10 @@ exc_pre3 %>%
         axis.title.x = element_text(size = 12),
         axis.title.y = element_blank())
 
-ggsave("figures/excess_prepandemic_pandemic_v2.png",
-       w = 6,
-       h = 7.5)
+# ggsave("figures/excess_prepandemic_pandemic_v2.png",
+#        w = 6,
+#        h = 7.5)
+
 
 
 exc_pre3 %>% 
@@ -343,9 +359,10 @@ exc_pre3 %>%
           add = "reg.line", conf.int = TRUE, 
           cor.coef = TRUE, cor.method = "pearson",
           xlab = "Pre-pandemic excess", ylab = "Pandemic excess") 
-ggsave("figures/scatter_plot_prepand_pand_excess.png",
-       w = 5,
-       h = 5)
+
+# ggsave("figures/scatter_plot_prepand_pand_excess.png",
+#        w = 5,
+#        h = 5)
 
 tt <- 
   exc_pre3 %>% 
@@ -354,6 +371,28 @@ tt <-
 
 tt %>% 
   summarise(r_av = mean(ratio))
+
+
+# P-scores before and during the pandemic
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+pscs %>% 
+  # mutate(exc_typ = factor(exc_typ, levels = c("psc_pre", "psc_pan"))) %>% 
+  ggplot() + 
+  # geom_bar(position="stack", stat="identity")+
+  geom_point(aes(x = psc, y = reorder(state, rnk), col = exc_typ))+
+  # scale_color_manual(values = cols, labels = c("Pandemic-free excess",
+  #                                             "Pandemic excesss"))+
+  # coord_flip()+
+  # labs(y = "Age-standardized excess death rates (/100K)")+
+  theme_bw()+
+  theme(legend.position = c(.75, .1),
+        legend.background = element_blank(),
+        legend.text = element_text(size = 11),
+        legend.title = element_blank(),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_blank())
 
 
 
@@ -459,8 +498,8 @@ tt %>%
         axis.title = element_text(size = 20),
   )
 
-ggsave("figures/fake_mess.png",
-       w = 10, h = 10)
+# ggsave("figures/fake_mess.png",
+#        w = 10, h = 10)
 # 
 
 
