@@ -25,10 +25,10 @@ dt2 <-
   drop_na(state) %>% 
   mutate(dts = ifelse(dts == "Suppressed", "5", dts),
          dts = dts %>% as.double()) %>% 
-  separate(mth, c("year", "mth"), sep = "/") %>% 
+  separate_wider_delim(mth, names=c("year", "mth"), delim = "/") %>% 
   mutate(date = make_date(y = year, m = mth, d = 15),
          year = year %>% as.double()) %>% 
-  left_join(pop_sts2) %>% 
+  left_join(pop_sts, by = join_by(state, year)) %>% 
   mutate(mx = 1e5*dts/exposure)
 
 dt2 %>% 
@@ -128,7 +128,7 @@ ggsave("figures/c19_monthly_state_chamber.png",
        w = 8, h = 4)
 
 
-dt4 <- 
+
   
 
 
@@ -151,3 +151,5 @@ dt4 <-
 #         axis.text.x = element_text(angle = 45, hjust = 1))
 # ggsave("figures/c19_monthly_state.png",
 #        w = 8, h = 4)
+
+  
