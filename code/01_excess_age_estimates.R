@@ -217,6 +217,7 @@ exc4 <-
   select(state, phase, exc_tot) %>% 
   arrange(phase, state)
   
+
 # total baseline ====
 # ~~~~~~~~~~~~~~~~~~~
 
