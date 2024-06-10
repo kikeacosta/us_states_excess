@@ -1,6 +1,25 @@
 rm (list = ls())
 source("code/00_setup.R")
 
+
+# loading data about government political affiliation
+polit <- read_csv("data_input/woolf_tabs3.csv")
+codes <- read_csv("data_input/us_state_codes.csv")
+
+pol2 <- 
+  polit %>% 
+  filter(phase %in% 1:3) %>% 
+  group_by(state) %>% 
+  summarise(pol = round(mean(polit))) %>%  
+  bind_rows(tibble(state = "District of Columbia", pol = 1),
+            tibble(state = "Nebraska", pol = 4),
+            tibble(state = "US", pol = 3)) %>% 
+  mutate(chm = case_when(pol == 1 ~ "Democrat",
+                         pol == 4 ~ "Republican",
+                         TRUE ~ "Mixed"),
+         gov = ifelse(pol <= 2, "dem","rep"))
+
+
 # phases definitions
 # phases for adjusting rates denominators
 ph1 <- ymd(c("2020-03-07", "2020-06-13"))
@@ -88,6 +107,7 @@ exc2 <-
 write_csv(exc2, "data_inter/excess_rates_by_age_phases_1_4.csv")
 
 
+# crude excess rates for the whole period 
 tot_rates <- 
   exc2 %>% 
   group_by(state) %>% 
@@ -98,12 +118,13 @@ tot_rates <-
          psc = exc/bsn) %>%
   arrange(exc_r)
 
-
+# average p-score across states 
 tot_rates %>% 
   summarise(psc_av = mean(psc))
 
-# age-specific excess deaths according to standard population
 
+# age-specific excess deaths according to standard population
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # using the age structure of the US
 # and the total population in each state
 
@@ -112,7 +133,6 @@ std <-
   select(state, age, exc_r, bsn_r, mx) %>% 
   left_join(pop_us2, by = join_by(age)) %>% 
   left_join(pop_sts_tot, by = join_by(state)) %>% 
-  
   # remember to undo the 100k units of rates
   mutate(
     exp_std = exp_tot * cx,
@@ -237,6 +257,13 @@ exc_pre2 <-
   arrange(exc_r) %>% 
   mutate(rnk = 1:n())
 
+# total age-standardized pandemic and inequality excess
+exc_pre2 %>% 
+  summarise(exc_std = sum(exc_std),
+            exc_pre = sum(exc_pre)) %>% 
+  mutate(ratio = exc_pre/exc_std) 
+
+
 # all US together
 exc_pre_us <- 
   exc_pre %>% 
@@ -254,13 +281,27 @@ exc_pre_us <-
   mutate(rnk = 52) %>% 
   mutate(state = "US")
 
-
 exc_pre3 <- 
   exc_pre2 %>% 
   bind_rows(exc_pre_us) %>% 
   arrange(rnk) %>% 
   select(state, rnk, exc_r, exc_pre_r) %>% 
   gather(exc_r, exc_pre_r, key = exc_typ, value = exc_r)
+
+# ratio of pandemic to preexisting excess rates
+exc_ratio <- 
+  exc_pre2 %>% 
+  bind_rows(exc_pre_us) %>% 
+  arrange(rnk) %>% 
+  # spread()
+  select(state, rnk, exc_r, exc_pre_r) %>% 
+  mutate(ratio = exc_pre_r / exc_r)
+
+# average
+exc_ratio %>% 
+  filter(state != "US") %>% 
+  summarise(ratio = mean(ratio))
+
 
 pscs <- 
   exc_pre2 %>% 
@@ -285,25 +326,6 @@ exc_pre3 %>%
   coord_flip()+
   labs(y = "Age standardized excess death rates")+
   theme_bw()+
-  theme(
-    axis.title.y = element_blank(),
-    )
-
-ggsave("figures/excess_pandemic.png",
-       w = 5,
-       h = 10)
-
-cols <- c("#fb8500", "black")
-
-exc_pre3 %>% 
-  mutate(exc_typ = factor(exc_typ, levels = c("exc_pre_r", "exc_r"))) %>% 
-  ggplot(aes(fill=exc_typ, y=exc_r, x=reorder(state, rnk))) + 
-  geom_bar(position="stack", stat="identity")+
-  scale_fill_manual(values = cols, labels = c("Pandemic-free excess",
-                                              "Pandemic excesss"))+
-  coord_flip()+
-  labs(y = "Age-standardized excess death rates (/100K)")+
-  theme_bw()+
   theme(legend.position = c(.75, .1),
         legend.background = element_blank(),
         legend.text = element_text(size = 11),
@@ -313,7 +335,43 @@ exc_pre3 %>%
         axis.title.x = element_text(size = 12),
         axis.title.y = element_blank())
 
-# ggsave("figures/excess_prepandemic_pandemic_v3.png",
+# ggsave("figures/excess_pandemic.png",
+#        w = 4,
+#        h = 7.5)
+
+cols <- c("grey90", "black")
+
+exc_pre3 %>% 
+  mutate(exc_typ = factor(exc_typ, 
+                          levels = c("exc_pre_r", "exc_r")
+                          )) %>% 
+  ggplot() + 
+  geom_point(data = pol2,
+             aes(x = state, y = -6, col = gov),
+             size = 3.5)+
+  geom_bar(aes(fill=exc_typ, y=exc_r, x=reorder(state, rnk)),
+           position="stack", stat="identity",
+           col = "grey30",
+           width = .8)+
+  scale_fill_manual(values = cols, 
+                    # breaks = c("exc_r", "exc_pre_r"),
+                    labels = c("Inequality excess",
+                                              "Pandemic excesss"))+
+  scale_color_manual(values = c("#3157d4", "#db2a2a"),
+                     guide = 'none')+
+  coord_flip()+
+  labs(y = "Age-standardized excess death rates (/100K)")+
+  theme_bw()+
+  theme(legend.position = c(.75, .1),
+        legend.background = element_blank(),
+        legend.text = element_text(size = 11),
+        legend.title = element_blank(),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 11),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_blank())
+
+# ggsave("figures/excess_prepandemic_pandemic_v4.png",
 #        w = 6,
 #        h = 7.5)
 
@@ -398,14 +456,7 @@ pscs %>%
 
 # relative difference with the average before and during the pandemic
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-polit <- read_csv("data_input/woolf_tabs3.csv")
-codes <- read_csv("data_input/us_state_codes.csv")
 
-pol2 <- 
-  polit %>% 
-  filter(phase %in% 1:2) %>% 
-  group_by(state) %>% 
-  summarise(pol = round(mean(polit)))
 
 r <- 
   exc_pre2 %>% 
@@ -503,13 +554,32 @@ tt %>%
 # 
 
 
+# without age-standardization
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# inequality- and pandemic-realetd excess during the pandemic
+bst_pan <- 
+  exc2 %>% 
+  group_by(age) %>% 
+  filter(bsn_r == min(bsn_r)) %>% 
+  arrange(age) %>% 
+  ungroup()
+
+inq <- 
+  exc2 %>% 
+  left_join(bst_pan %>% 
+              select(age, bsn_r_bst = bsn_r),
+            by = join_by(age)) %>% 
+  mutate(exc_inq_r = bsn_r - bsn_r_bst,
+         exc_inq = exc_inq_r*exposure/1e5)
 
 
+inq %>% 
+  ungroup() %>% 
+  summarise(exc = sum(exc),
+            exc_inq = sum(exc_inq)) %>% 
+  mutate(ratio = exc_inq/exc)
 
-
-
-
-
+# 
 
 
 
