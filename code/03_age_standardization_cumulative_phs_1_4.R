@@ -318,6 +318,7 @@ pscs <-
   select(state, rnk, psc_pan, psc_pre) %>% 
   gather(psc_pan, psc_pre, key = exc_typ, value = psc)
 
+# AS excess death rates
 exc_pre3 %>% 
   filter(exc_typ == "exc_r") %>% 
   ggplot(aes(y=exc_r, x=reorder(state, rnk))) + 
@@ -338,6 +339,26 @@ exc_pre3 %>%
 # ggsave("figures/excess_pandemic.png",
 #        w = 4,
 #        h = 7.5)
+
+
+pscs %>% 
+  filter(exc_typ == "psc_pan") %>% 
+  ggplot() + 
+  # geom_bar(position="dodge", stat="identity", fill = "black")+
+  # scale_fill_manual(values = cols)+
+  geom_point(aes(x=psc, y=reorder(state, rnk)))+
+  coord_cartesian(xlim = c(0, .26))+
+  labs(x = "P-scores")+
+  theme_bw()+
+  theme(axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_blank())
+
+ggsave("figures/pscores_pandemic.png",
+       w = 4,
+       h = 7.5)
+
 
 cols <- c("grey90", "black")
 
@@ -416,11 +437,24 @@ exc_pre3 %>%
   ggscatter(x = "exc_pre_r", y = "exc_r", 
           add = "reg.line", conf.int = TRUE, 
           cor.coef = TRUE, cor.method = "pearson",
-          xlab = "Pre-pandemic excess", ylab = "Pandemic excess") 
+          xlab = "Inequality excess", ylab = "Pandemic excess") 
 
-# ggsave("figures/scatter_plot_prepand_pand_excess.png",
-#        w = 5,
-#        h = 5)
+ggsave("figures/scatter_plot_prepand_pand_excess.png",
+       w = 5,
+       h = 5)
+
+# without DC
+exc_pre3 %>% 
+  filter(state != "District of Columbia") |>
+  spread(exc_typ, exc_r) %>% 
+  ggscatter(x = "exc_pre_r", y = "exc_r", 
+            add = "reg.line", conf.int = TRUE, 
+            cor.coef = TRUE, cor.method = "pearson",
+            xlab = "Inequality excess", ylab = "Pandemic excess") 
+
+ggsave("figures/scatter_plot_prepand_pand_excess_noDC.png",
+       w = 5,
+       h = 5)
 
 tt <- 
   exc_pre3 %>% 
@@ -577,7 +611,8 @@ inq %>%
   ungroup() %>% 
   summarise(exc = sum(exc),
             exc_inq = sum(exc_inq)) %>% 
-  mutate(ratio = exc_inq/exc)
+  mutate(ratio = exc_inq/exc,
+         prop_pan = exc/(exc+exc_inq))
 
 # 
 
