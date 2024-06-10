@@ -115,7 +115,7 @@ std2 <-
   arrange(rnk_exc_std)
 
 std2 |> 
-  ggplot(aes(x = psc, y = state)) +
+  ggplot(aes(x = psc, y = reorder(state, psc))) +
   geom_point() +
   theme_minimal()
 
@@ -237,7 +237,19 @@ ggsave("figures/excess_prepandemic_pandemic_v2.png",
        w = 7,
        h = 7)
 
-
+exc_pre3 %>% 
+  mutate(exc_typ = factor(exc_typ, levels = c("exc_pre_r", "exc_r"))) %>% 
+  ggplot(aes(fill=exc_typ, y=exc_r, x=reorder(state, exc_pre))) + 
+  geom_bar(position="stack", stat="identity")+
+  scale_fill_manual(values = cols, labels = c("Pre-pandemic excess",
+                                              "Pandemic excesss"))+
+  coord_flip()+
+  labs(y = "Excess death rates",
+       fill = "",
+       x = "")+
+  theme_bw()+
+  theme(legend.position = c(.8, .2),
+        legend.background = element_blank())
 
 
 
@@ -260,6 +272,16 @@ ggsave("figures/excess_prepandemic_pandemic_v2.png",
        w = 7,
        h = 7)
 
+# coefficient of variation of pre-pandemic excess (0.419)
+exc_pre3 |> 
+  filter(exc_typ == "exc_pre_r") |> 
+  summarize(cv = sd(exc_r)/mean(exc_r))
+
+# coefficient of variation of total excess (0.360)
+exc_pre3 |> 
+  group_by(state) |> 
+  summarize(exc_r = sum(exc_r)) |> 
+  summarize(cv = sd(exc_r)/mean(exc_r))
 
 exc_pre3 %>% 
   spread(exc_typ, exc_r) %>% 
@@ -273,7 +295,7 @@ exc_pre3 %>%
 library("ggpubr")
 exc_pre3 %>% 
   #filter(state != "District of Columbia") |> 
-  spread(exc_typ, exc_r) %>% 
+  pivot_wider(names_from = exc_typ, values_from = exc_r) %>% 
   ggscatter(x = "exc_pre_r", y = "exc_r", 
           add = "reg.line", conf.int = TRUE, 
           cor.coef = TRUE, cor.method = "pearson",
@@ -284,11 +306,16 @@ ggsave("figures/scatter_plot_prepand_pand_excess.png",
 
 tt <- 
   exc_pre3 %>% 
-  spread(exc_typ, exc_r) %>% 
+  pivot_wider(names_from = exc_typ, values_from = exc_r) %>% 
   mutate(ratio = exc_pre_r/exc_r)
 
 tt %>% 
-  summarise(r_av = mean(ratio))
+  summarise(r_av = mean(ratio),
+            # different sort of comparison
+            t_av2 = sum(exc_pre_r) / sum(exc_r),
+            # get extremes too
+            t_max = max(ratio),
+            t_min = min(ratio))
 
 
 
