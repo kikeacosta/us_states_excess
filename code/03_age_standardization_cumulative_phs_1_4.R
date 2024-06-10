@@ -41,9 +41,9 @@ pop_us <- read_tsv("data_input/pop_us_agex5_2015_2023.txt")
 
 pop_us2 <- 
   pop_us %>% 
-  select(year = 3,
-         age = 5,
-         pop = 6) %>% 
+  select(year = `Year Code`,
+         age = `Age Group Code`,
+         pop = `Projected Populations`) %>% 
   mutate(age = parse_number(age),
          age = if_else(age < 15,0,age)) %>% 
   filter(year %in% 2020:2023) %>% 
@@ -72,7 +72,8 @@ pop_sts2 <-
                         TRUE ~ 1)) %>% 
   # calculating exposures for the whole period 2020-03-07 - 2023-07-02
   group_by(state, age) %>% 
-  summarise(exposure = sum(pop * fr),.groups = "drop")
+  summarise(exposure = sum(pop * fr),
+            .groups = "drop")
 
 
 pop_sts_tot <- 
@@ -91,7 +92,8 @@ exc2 <-
   group_by(state, age) %>% 
   summarise(dx = sum(dx),
             bsn = sum(bsn),
-            exc = sum(exc)) %>% 
+            exc = sum(exc),
+            .groups = "drop") %>% 
   left_join(pop_sts2, 
             by = join_by(state, age)) %>% 
   # this is an approximation, taking info from just 1 pop estimate,
@@ -131,8 +133,10 @@ tot_rates %>%
 std <- 
   exc2 %>% 
   select(state, age, exc_r, bsn_r, mx) %>% 
-  left_join(pop_us2, by = join_by(age)) %>% 
-  left_join(pop_sts_tot, by = join_by(state)) %>% 
+  left_join(pop_us2, 
+            by = join_by(age)) %>% 
+  left_join(pop_sts_tot, 
+            by = join_by(state)) %>% 
   # remember to undo the 100k units of rates
   mutate(
     exp_std = exp_tot * cx,
@@ -151,8 +155,6 @@ std2 <-
             exposure = sum(exp_std), 
             .groups = "drop") %>% 
   # once again age-standardized excess rate scaled up to pre 100k
-  # TR: why / pop?
-  # KA: no adjusted for exposure during the whole observation period (~3.3 years)
   mutate(exc_r_std = 1e5 * exc_std / exposure,
          bsn_r_std = 1e5 * bsn_std / exposure,
          mx_std = 1e5 * dx_std / exposure,
@@ -164,16 +166,17 @@ std2 <-
   arrange(rnk_exc_std)
 
 std2 |> 
-  ggplot(aes(x = psc, y = state)) +
+  ggplot(aes(x = psc, y = reorder(state,psc))) +
   geom_point() +
-  theme_minimal()
+  theme_minimal() +
+  labs(x = "P-score (excess / baseline)", y = "")
 
+
+# checks, for quick stats
 std2 %>% 
-  group_by() %>% 
   summarize(psc_av = mean(psc))
 
 std2 %>% 
-  group_by() %>% 
   summarize(exc = sum(exc_std))
 
 write_csv(std2, "data_inter/age_standardized_excess_rates_states.csv")
@@ -184,7 +187,8 @@ write_csv(std2, "data_inter/age_standardized_excess_rates_states.csv")
 # adding all phases together for accumulating Wolff's estimates
 exc_wlf <- 
   exc %>% 
-  left_join(pop_sts2, by = join_by(state, age)) %>% 
+  left_join(pop_sts2, 
+            by = join_by(state, age)) %>% 
   group_by(state) %>% 
   summarise(exc = sum(exc),
             bsn = sum(bsn),
@@ -208,7 +212,7 @@ cmp <-
   select(state, rnk_exc_std, rnk_psc_std) %>% 
   left_join(exc_wlf %>% 
               select(state, rnk_exc_raw, rnk_psc_raw),
-            join_by(state))
+            by = join_by(state))
 
 
 write_csv(cmp, "data_inter/preliminary_ranks_raw_std_cum.csv")
@@ -224,7 +228,23 @@ bst <-
   filter(bsn_r == min(bsn_r)) %>% 
   arrange(age) 
 
-bst
+# which states make up the best-practice schedule?
+bst |> 
+  mutate(ageint = if_else(age==0,15,10) ) |> 
+  ggplot(aes(y = mx/1e5,
+             yend = mx/1e5, 
+             color = state, 
+             label = state)) +
+  geom_segment(mapping = aes(x=age, 
+                             xend = (ageint + age)),
+               linewidth=2) +
+  scale_y_log10() +
+  theme_minimal() +
+  geom_text(mapping = aes(x=age+ageint/2),nudge_y =.1) +
+  guides(color = "none") +
+  labs(x = "age",
+       y = "best practice mortality rate", 
+       title = "state composition of best practice mortality schedule")
 
 bst2 <- 
   bst %>% 
@@ -267,7 +287,6 @@ exc_pre2 %>%
 # all US together
 exc_pre_us <- 
   exc_pre %>% 
-  group_by() %>% 
   summarise(dx_std = sum(dx_std),
             bsn_std = sum(bsn_std),
             exc_std = sum(exc_std),
@@ -286,7 +305,9 @@ exc_pre3 <-
   bind_rows(exc_pre_us) %>% 
   arrange(rnk) %>% 
   select(state, rnk, exc_r, exc_pre_r) %>% 
-  gather(exc_r, exc_pre_r, key = exc_typ, value = exc_r)
+  pivot_longer(c(exc_r, exc_pre_r), 
+               names_to = "exc_typ", 
+               values_to = "exc_r")
 
 # ratio of pandemic to preexisting excess rates
 exc_ratio <- 
@@ -297,7 +318,7 @@ exc_ratio <-
   select(state, rnk, exc_r, exc_pre_r) %>% 
   mutate(ratio = exc_pre_r / exc_r)
 
-# average
+# average of ratios. Not same as ratio of the averages
 exc_ratio %>% 
   filter(state != "US") %>% 
   summarise(ratio = mean(ratio))
@@ -316,7 +337,7 @@ pscs <-
   ) %>% 
   arrange(rnk) %>% 
   select(state, rnk, psc_pan, psc_pre) %>% 
-  gather(psc_pan, psc_pre, key = exc_typ, value = psc)
+  pivot_longer(c(psc_pan, psc_pre), names_to = "exc_typ", values_to = "psc")
 
 # AS excess death rates
 exc_pre3 %>% 
@@ -359,6 +380,27 @@ ggsave("figures/pscores_pandemic.png",
        w = 4,
        h = 7.5)
 
+library(colorspace)
+mixcolor(alpha=.5,sRGB(1,0,0),sRGB(1,1,1))
+exc_pre3 %>% 
+  left_join(pol2,by=join_by(state)) |> 
+  mutate(fill = case_when(pol == 1 ~ "")) |> 
+  ggplot(aes(fill=fill, y=exc_r, x=reorder(state, rnk))) + 
+  geom_bar(position="stack", stat="identity",
+           col = "grey30",
+           width = .8)+
+  scale_fill_identity() +
+  coord_flip()+
+  labs(y = "Age-standardized excess death rates (/100K)")+
+  theme_bw()
+  theme(legend.position = c(.75, .1),
+        legend.background = element_blank(),
+        legend.text = element_text(size = 11),
+        legend.title = element_blank(),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 11),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_blank())
 
 cols <- c("grey90", "black")
 
