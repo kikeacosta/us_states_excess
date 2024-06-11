@@ -13,7 +13,8 @@ pol2 <-
   summarise(pol = round(mean(polit))) %>%  
   bind_rows(tibble(state = "District of Columbia", pol = 1),
             tibble(state = "Nebraska", pol = 4),
-            tibble(state = "US", pol = 3)) %>% 
+            # tibble(state = "US", pol = NA)
+            ) %>% 
   mutate(chm = case_when(pol == 1 ~ "Democrat",
                          pol == 4 ~ "Republican",
                          TRUE ~ "Mixed"),
@@ -145,6 +146,15 @@ std <-
     dx_std = mx * exp_std / 1e5,
   )
 
+std %>% 
+  ggplot()+
+  geom_line(aes(age, exc_r, group = state),
+            alpha = .5)+
+  scale_y_log10()+
+  theme_bw()
+
+
+
 std2 <- 
   std %>% 
   # calculate age-standardized obs death, baseline, and excess rates
@@ -239,12 +249,50 @@ bst |>
                              xend = (ageint + age)),
                linewidth=2) +
   scale_y_log10() +
+  scale_x_continuous(breaks = c(0, seq(15, 85, 10)))+
   theme_minimal() +
   geom_text(mapping = aes(x=age+ageint/2),nudge_y =.1) +
   guides(color = "none") +
   labs(x = "age",
        y = "best practice mortality rate", 
        title = "state composition of best practice mortality schedule")
+
+ggsave("figures/best_practice_age_specific_death_rates.png",
+       w = 6,
+       h = 4)
+
+age_strs <- 
+  exc2 %>% 
+  mutate(ageint = if_else(age==0,15,10) )
+
+bst |> 
+  mutate(ageint = if_else(age==0,15,10) ) |> 
+  ggplot(aes(y = mx/1e5,
+             yend = mx/1e5, 
+             color = state, 
+             label = state)) +
+  geom_segment(mapping = aes(x=age, 
+                             xend = (ageint + age)),
+               linewidth=2) +
+  geom_segment(data = age_strs,
+                 mapping = aes(x=age, 
+                             xend = (ageint + age)),
+               linewidth=.2,
+               alpha = .3,
+               col = "grey"
+               ) +
+  scale_y_log10() +
+  scale_x_continuous(breaks = c(0, seq(15, 85, 10)))+
+  theme_minimal() +
+  geom_text(mapping = aes(x=age+ageint/2),nudge_y =-.1, size = 2.5) +
+  guides(color = "none") +
+  labs(x = "age",
+       y = "best practice mortality rate", 
+       title = "state composition of best practice mortality schedule")
+
+ggsave("figures/test.png",
+       w = 6,
+       h = 4)
 
 bst2 <- 
   bst %>% 
@@ -376,9 +424,9 @@ pscs %>%
         axis.title.x = element_text(size = 12),
         axis.title.y = element_blank())
 
-ggsave("figures/pscores_pandemic.png",
-       w = 4,
-       h = 7.5)
+# ggsave("figures/pscores_pandemic.png",
+#        w = 4,
+#        h = 7.5)
 
 library(colorspace)
 mixcolor(alpha=.5,sRGB(1,0,0),sRGB(1,1,1))
@@ -392,7 +440,7 @@ exc_pre3 %>%
   scale_fill_identity() +
   coord_flip()+
   labs(y = "Age-standardized excess death rates (/100K)")+
-  theme_bw()
+  theme_bw()+
   theme(legend.position = c(.75, .1),
         legend.background = element_blank(),
         legend.text = element_text(size = 11),
@@ -406,19 +454,18 @@ cols <- c("grey90", "black")
 
 exc_pre3 %>% 
   mutate(exc_typ = factor(exc_typ, 
-                          levels = c("exc_pre_r", "exc_r")
-  )) %>% 
+                          levels = c("exc_pre_r", "exc_r"))) %>% 
   ggplot() + 
   geom_point(data = pol2,
-             aes(x = state, y = -6, col = gov),
-             size = 3.5)+
+             aes(x = state, y = -3, col = gov),
+             size = 3.3)+
   geom_bar(aes(fill=exc_typ, y=exc_r, x=reorder(state, rnk)),
            position="stack", stat="identity",
            col = "grey30",
            width = .8)+
   scale_fill_manual(values = cols, 
                     # breaks = c("exc_r", "exc_pre_r"),
-                    labels = c("Inequality excess",
+                    labels = c("Disparity excess",
                                "Pandemic excesss"))+
   scale_color_manual(values = c("#3157d4", "#db2a2a"),
                      guide = 'none')+
@@ -434,9 +481,9 @@ exc_pre3 %>%
         axis.title.x = element_text(size = 12),
         axis.title.y = element_blank())
 
-# ggsave("figures/excess_prepandemic_pandemic_v4.png",
-#        w = 6,
-#        h = 7.5)
+ggsave("figures/excess_prepandemic_pandemic_v4.png",
+       w = 6,
+       h = 7.5)
 
 
 exc_pre3 %>% 
