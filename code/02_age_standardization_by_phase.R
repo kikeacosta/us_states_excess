@@ -162,12 +162,13 @@ cmp <- read_csv("data_inter/preliminary_ranks_raw_std.csv")
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 tt <- cmp |>
   select(-rnk_raw) %>% 
-  spread(phase, rnk_std) %>% 
+  pivot_wider(names_from = phase, values_from = rnk_std) %>% 
   select(-`5`) |>
   mutate(ch1 = abs(`1` - `2`),
          ch2 = abs(`2` - `3`),
          ch3 = abs(`3` - `4`))
 
+# TR: seems OK to me
 tt |>
   summarise(ch1 = mean(ch1),
             ch2 = mean(ch2),

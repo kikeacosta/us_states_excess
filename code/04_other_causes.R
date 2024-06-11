@@ -3,21 +3,25 @@ source("code/00_setup.R")
 
 exc <- read_csv("data_inter/excess_rates_by_age_phases_1_4.csv")
 # exc <- read_csv("data_inter/excess_rates_by_age_all_period.csv")
-
-dt_cs_p1 <- read_tsv("data_input/dts_ages_all_by_cause_annual_states_2018_2023.txt") %>% 
-  select(state = 2, 
-         year = 5,
-         cause = 6,
-         dts = 8,
-         pop = 9) %>% 
+dat <- read_tsv("data_input/dts_ages_all_by_cause_annual_states_2018_2023.txt",
+                show_col_types = FALSE) 
+problems(dat)
+dt_cs_p1 <- read_tsv("data_input/dts_ages_all_by_cause_annual_states_2018_2023.txt",
+                     show_col_types = FALSE) %>% 
+  select(state = `Residence State`, 
+         year = `Year Code`,
+         cause = `MCD - ICD Chapter`,
+         dts = Deaths,
+         pop = Population ) %>% 
   filter(year %in% 2020:2023)
 
-dt_cs_p2 <- read_tsv("data_input/dts_ages_all_by_cause_annual_states_2015_2019.txt") %>% 
-  select(state = 2, 
-         year = 5,
-         cause = 6,
-         dts = 8,
-         pop = 9) %>% 
+dt_cs_p2 <- read_tsv("data_input/dts_ages_all_by_cause_annual_states_2015_2019.txt",
+                     show_col_types = FALSE) %>% 
+  select(state = State   , 
+         year = `Year Code`,
+         cause = `MCD - ICD Chapter`,
+         dts = Deaths,
+         pop = Population ) %>% 
   filter(year %in% 2015:2019)
 
 dt_cs <- 
@@ -91,9 +95,10 @@ dt_all <- read_tsv("data_input/dts_ages_all_cause_all_annual_states_2018_2023.tx
 
 dt_all2 <- 
   dt_all %>% 
-  select(state = 2,
-         year = 5,
-         dts_all = 6, pop = 7) %>% 
+  select(state = `Residence State`,
+         year = `Year Code`,
+         dts_all = Deaths, 
+         pop = Population) %>% 
   filter(year %in% 2018:2023)
 
 
@@ -108,10 +113,6 @@ tt <-
   arrange(prop)
 
 
-
-
-
-unique(dt3$cause)
 
 
 
