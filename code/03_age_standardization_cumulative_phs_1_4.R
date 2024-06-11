@@ -122,7 +122,7 @@ tot_rates <-
 
 # average p-score across states 
 tot_rates %>% 
-  summarise(psc_av = mean(psc))
+    summarise(psc_av = mean(psc))
 
 
 # age-specific excess deaths according to standard population
@@ -218,6 +218,32 @@ cmp <-
 write_csv(cmp, "data_inter/preliminary_ranks_raw_std_cum.csv")
 
 
+# some plots comparing crude and age-standardized state rankings over full cumulative period
+cmp |>
+  left_join(codes, by = join_by(state)) |> 
+  ggplot(aes(x = rnk_exc_std, y = rnk_exc_raw, label = state_code)) +
+  coord_equal() +
+  theme_minimal() +
+  geom_abline(slope = 1, intercept = 0, color = "red") +
+  geom_text() +
+  annotate("text",40,10,label = "lower rank when\nage standardized", size = 6) +
+  annotate("text",10,40,label = "higher rank when\nage standardized", size = 6) +
+  labs(x = "age standardized excess rank",
+       y = "crude excess rank")
+
+cmp |>
+  left_join(codes, by = join_by(state)) |> 
+  ggplot(aes(x = rnk_psc_std, y = rnk_psc_raw, label = state_code)) +
+  coord_equal() +
+  theme_minimal() +
+  geom_abline(slope = 1, intercept = 0, color = "red") +
+  geom_text() +
+  annotate("text",40,10,label = "lower rank when\nage standardized", size = 6) +
+  annotate("text",10,40,label = "higher rank when\nage standardized", size = 6) +
+  labs(x = "age standardized p-score rank",
+       y = "crude p-score rank")
+
+
 
 # best practice mortality
 # ~~~~~~~~~~~~~~~~~~~~~~~
@@ -228,7 +254,7 @@ bst <-
   filter(bsn_r == min(bsn_r)) %>% 
   arrange(age) 
 
-# which states make up the best-practice schedule?
+# plot which states make up the best-practice schedule
 bst |> 
   mutate(ageint = if_else(age==0,15,10) ) |> 
   ggplot(aes(y = mx/1e5,
@@ -380,102 +406,75 @@ ggsave("figures/pscores_pandemic.png",
        w = 4,
        h = 7.5)
 
-library(colorspace)
-mixcolor(alpha=.5,sRGB(1,0,0),sRGB(1,1,1))
+# ranked by pandemic excess, stacked, fill to governor party
 exc_pre3 %>% 
   left_join(pol2,by=join_by(state)) |> 
-  mutate(fill = case_when(pol == 1 ~ "")) |> 
-  ggplot(aes(fill=fill, y=exc_r, x=reorder(state, rnk))) + 
+  mutate(exc_typ = if_else(exc_typ == "exc_pre_r", "baseline excess","pandemic excess")) |> 
+  ggplot(aes(x=exc_r, y=reorder(state, rnk), fill = gov,alpha=exc_typ)) + 
   geom_bar(position="stack", stat="identity",
            col = "grey30",
            width = .8)+
-  scale_fill_identity() +
-  coord_flip()+
-  labs(y = "Age-standardized excess death rates (/100K)")+
-  theme_bw()
-  theme(legend.position = c(.75, .1),
+  scale_fill_manual(values = c("#bb1212","#1212bb")) +
+  scale_alpha_manual(values = c(.5,1))+
+  labs(y = "Age-standardized excess death rates (/100K)",
+       fill = "governor party",
+       alpha = "excess type")+
+  theme_bw() +
+  theme(legend.position = c(.75, .3),
         legend.background = element_blank(),
         legend.text = element_text(size = 11),
-        legend.title = element_blank(),
         axis.text.x = element_text(size = 10),
         axis.text.y = element_text(size = 11),
         axis.title.x = element_text(size = 12),
         axis.title.y = element_blank())
 
-cols <- c("grey90", "black")
-
+# ranked to overall excess
 exc_pre3 %>% 
-  mutate(exc_typ = factor(exc_typ, 
-                          levels = c("exc_pre_r", "exc_r")
-  )) %>% 
-  ggplot() + 
-  geom_point(data = pol2,
-             aes(x = state, y = -6, col = gov),
-             size = 3.5)+
-  geom_bar(aes(fill=exc_typ, y=exc_r, x=reorder(state, rnk)),
-           position="stack", stat="identity",
+  left_join(pol2,by=join_by(state)) |> 
+  mutate(exc_typ = if_else(exc_typ == "exc_pre_r", "baseline excess","pandemic excess")) |> 
+  ggplot(aes(x=exc_r, y=reorder(state, exc_r), fill = gov,alpha=exc_typ)) + 
+  geom_bar(position="stack", stat="identity",
            col = "grey30",
            width = .8)+
-  scale_fill_manual(values = cols, 
-                    # breaks = c("exc_r", "exc_pre_r"),
-                    labels = c("Inequality excess",
-                               "Pandemic excesss"))+
-  scale_color_manual(values = c("#3157d4", "#db2a2a"),
-                     guide = 'none')+
-  coord_flip()+
-  labs(y = "Age-standardized excess death rates (/100K)")+
-  theme_bw()+
-  theme(legend.position = c(.75, .1),
+  scale_fill_manual(values = c("#bb1212","#1212bb")) +
+  scale_alpha_manual(values = c(.5,1))+
+  labs(y = "Age-standardized excess death rates (/100K)",
+       fill = "governor party",
+       alpha = "excess type")+
+  theme_bw() +
+  theme(legend.position = c(.75, .3),
         legend.background = element_blank(),
         legend.text = element_text(size = 11),
-        legend.title = element_blank(),
         axis.text.x = element_text(size = 10),
         axis.text.y = element_text(size = 11),
         axis.title.x = element_text(size = 12),
         axis.title.y = element_blank())
-
 # ggsave("figures/excess_prepandemic_pandemic_v4.png",
 #        w = 6,
 #        h = 7.5)
 
 
-exc_pre3 %>% 
-  mutate(exc_typ = factor(exc_typ, levels = c("exc_pre_r", "exc_r"))) %>% 
-  ggplot(aes(fill=exc_typ, y=exc_r, x=reorder(state, exc_r))) + 
-  geom_bar(position="stack", stat="identity")+
-  scale_fill_manual(values = cols, labels = c("Pandemic-free excess",
-                                              "Pandemic excesss"))+
-  coord_flip()+
-  labs(y = "Age-standardized excess death rates (/100K)")+
-  theme_bw()+
-  theme(legend.position = c(.75, .1),
-        legend.background = element_blank(),
-        legend.text = element_text(size = 11),
-        legend.title = element_blank(),
-        axis.text.x = element_text(size = 10),
-        axis.text.y = element_text(size = 10),
-        axis.title.x = element_text(size = 12),
-        axis.title.y = element_blank())
-
 # ggsave("figures/excess_prepandemic_pandemic_v2.png",
 #        w = 6,
 #        h = 7.5)
 
-
-
+# compare
 exc_pre3 %>% 
-  spread(exc_typ, exc_r) %>% 
+  pivot_wider(names_from = exc_typ, values_from = exc_r) %>% 
+  left_join(pol2, by = join_by(state)) |> 
+  left_join(codes, by = join_by(state)) |> 
   ggplot()+
-  geom_point(aes(exc_pre_r, exc_r))+
-  theme_bw()+
+  geom_text(aes(exc_pre_r, exc_r, color = gov, label = state_code))+
+  theme_bw() +
   labs(y = "Pandemic excess",
-       x = "Pre-pandemic excess")
+       x = "Pre-pandemic excess") +
+  scale_color_manual(values = c("#bb1212","#1212bb"))
 
 
 library("ggpubr")
 exc_pre3 %>% 
   #filter(state != "District of Columbia") |> 
-  spread(exc_typ, exc_r) %>% 
+  pivot_wider(names_from = exc_typ, values_from = exc_r) %>% 
   ggscatter(x = "exc_pre_r", y = "exc_r", 
             add = "reg.line", conf.int = TRUE, 
             cor.coef = TRUE, cor.method = "pearson",
@@ -488,7 +487,7 @@ ggsave("figures/scatter_plot_prepand_pand_excess.png",
 # without DC
 exc_pre3 %>% 
   filter(state != "District of Columbia") |>
-  spread(exc_typ, exc_r) %>% 
+  pivot_wider(names_from = exc_typ, values_from = exc_r) %>% 
   ggscatter(x = "exc_pre_r", y = "exc_r", 
             add = "reg.line", conf.int = TRUE, 
             cor.coef = TRUE, cor.method = "pearson",
@@ -632,7 +631,7 @@ tt %>%
 
 # without age-standardization
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# inequality- and pandemic-realetd excess during the pandemic
+# inequality- and pandemic-relaetd excess during the pandemic
 bst_pan <- 
   exc2 %>% 
   group_by(age) %>% 
@@ -640,36 +639,36 @@ bst_pan <-
   arrange(age) %>% 
   ungroup()
 
-inq <- 
-  exc2 %>% 
-  left_join(bst_pan %>% 
-              select(age, bsn_r_bst = bsn_r),
-            by = join_by(age)) %>% 
-  mutate(exc_inq_r = bsn_r - bsn_r_bst,
-         exc_inq = exc_inq_r*exposure/1e5)
-
-
-inq %>% 
-  ungroup() %>% 
-  summarise(exc = sum(exc),
-            exc_inq = sum(exc_inq)) %>% 
-  mutate(ratio = exc_inq/exc,
-         prop_pan = exc/(exc+exc_inq))
-
+# inq <- 
+#   exc2 %>% 
+#   left_join(bst_pan %>% 
+#               select(age, bsn_r_bst = bsn_r),
+#             by = join_by(age)) %>% 
+#   mutate(exc_inq_r = bsn_r - bsn_r_bst,
+#          exc_inq = exc_inq_r*exposure/1e5)
 # 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# 
+# inq %>% 
+#   ungroup() %>% 
+#   summarise(exc = sum(exc),
+#             exc_inq = sum(exc_inq)) %>% 
+#   mutate(ratio = exc_inq/exc,
+#          prop_pan = exc/(exc+exc_inq))
+# 
+# # 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
+# 
