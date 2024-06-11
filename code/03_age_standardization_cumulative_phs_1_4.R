@@ -414,9 +414,9 @@ exc_pre3 %>%
   geom_bar(position="stack", stat="identity",
            col = "grey30",
            width = .8)+
-  scale_fill_manual(values = c("#bb1212","#1212bb")) +
+  scale_fill_manual(values = c("#1212bb","#bb1212")) +
   scale_alpha_manual(values = c(.5,1))+
-  labs(y = "Age-standardized excess death rates (/100K)",
+  labs(x = "Age-standardized excess death rates (/100K)",
        fill = "governor party",
        alpha = "excess type")+
   theme_bw() +
@@ -428,6 +428,10 @@ exc_pre3 %>%
         axis.title.x = element_text(size = 12),
         axis.title.y = element_blank())
 
+ggsave("figures/excess_pre_and_pandemic.png",
+       w = 6,
+       h = 7.5)
+
 # ranked to overall excess
 exc_pre3 %>% 
   left_join(pol2,by=join_by(state)) |> 
@@ -438,7 +442,7 @@ exc_pre3 %>%
            width = .8)+
   scale_fill_manual(values = c("#bb1212","#1212bb")) +
   scale_alpha_manual(values = c(.5,1))+
-  labs(y = "Age-standardized excess death rates (/100K)",
+  labs(x = "Age-standardized excess death rates (/100K)",
        fill = "governor party",
        alpha = "excess type")+
   theme_bw() +
@@ -449,6 +453,28 @@ exc_pre3 %>%
         axis.text.y = element_text(size = 11),
         axis.title.x = element_text(size = 12),
         axis.title.y = element_blank())
+
+ggsave("figures/excess_pre_and_pandemic2.png",
+       w = 6,
+       h = 7.5)
+
+# quick q: for how many states was pre excess same or less than pandemic excess?
+exc_pre3 |> 
+  pivot_wider(names_from = exc_typ, values_from = exc_r) |> 
+  mutate(ratio = exc_pre_r / exc_r) |> 
+  arrange(ratio)
+# Note Alaska, Arizona, California all contributed at least one age group to
+# the best practice standard. These are also the 6th, 8th, and 1st lowest total 
+# excess states.
+
+exc_pre3 |> 
+  filter(state != "US") |> 
+  pivot_wider(names_from = exc_typ, values_from = exc_r) |> 
+  mutate(exc_tot_r = exc_pre_r + exc_r) |> 
+  summarize(exc_pre_sd = sd(exc_pre_r),
+            exc_tot_sd = sd(exc_tot_r),
+            exc_pre_cv = sd(exc_pre_r)/mean(exc_pre_r),
+            exc_tot_cv = sd(exc_tot_r)/mean(exc_tot_r))
 # ggsave("figures/excess_prepandemic_pandemic_v4.png",
 #        w = 6,
 #        h = 7.5)
