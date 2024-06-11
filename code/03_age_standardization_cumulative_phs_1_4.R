@@ -440,7 +440,7 @@ exc_pre3 %>%
   geom_bar(position="stack", stat="identity",
            col = "grey30",
            width = .8)+
-  scale_fill_manual(values = c("#bb1212","#1212bb")) +
+  scale_fill_manual(values = c("#1212bb","#bb1212")) +
   scale_alpha_manual(values = c(.5,1))+
   labs(x = "Age-standardized excess death rates (/100K)",
        fill = "governor party",
