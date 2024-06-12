@@ -492,8 +492,8 @@ exc_pre3 %>%
   ggplot()+
   geom_text(aes(exc_pre_r, exc_r, color = gov, label = state_code))+
   theme_bw() +
-  labs(y = "Pandemic excess",
-       x = "Pre-pandemic excess") +
+  labs(y = "Ppandemic excess",
+       x = "Baseline shortfall") +
   scale_color_manual(values = c("#bb1212","#1212bb"))
 
 
@@ -504,7 +504,7 @@ exc_pre3 %>%
   ggscatter(x = "exc_pre_r", y = "exc_r", 
             add = "reg.line", conf.int = TRUE, 
             cor.coef = TRUE, cor.method = "pearson",
-            xlab = "Inequality excess", ylab = "Pandemic excess") 
+            xlab = "Baseline shortfall", ylab = "Pandemic excess") 
 
 ggsave("figures/scatter_plot_prepand_pand_excess.png",
        w = 5,
@@ -517,7 +517,7 @@ exc_pre3 %>%
   ggscatter(x = "exc_pre_r", y = "exc_r", 
             add = "reg.line", conf.int = TRUE, 
             cor.coef = TRUE, cor.method = "pearson",
-            xlab = "Inequality excess", ylab = "Pandemic excess") 
+            xlab = "Baseline shortfall", ylab = "Pandemic excess") 
 
 ggsave("figures/scatter_plot_prepand_pand_excess_noDC.png",
        w = 5,
@@ -579,13 +579,13 @@ r %>%
   ggscatter(x = "rr_pre", y = "rr_exc", 
             add = "reg.line", conf.int = TRUE, 
             cor.coef = TRUE, cor.method = "pearson",
-            xlab = "Pre-pandemic relative risk", ylab = "Pandemic relative risk") 
+            xlab = "Baseline relative risk", ylab = "Pandemic relative risk") 
 
 r %>% 
   ggscatter(x = "rr_pre", y = "rr_pan", 
             add = "reg.line", conf.int = TRUE, 
             cor.coef = TRUE, cor.method = "pearson",
-            xlab = "Pre-pandemic relative risk", ylab = "Pandemic relative risk") 
+            xlab = "Baseline relative risk", ylab = "Pandemic relative risk") 
 
 
 r %>% 
@@ -593,16 +593,17 @@ r %>%
   ggscatter(x = "rr_pre", y = "rr_pan", 
             add = "reg.line", conf.int = TRUE, 
             cor.coef = TRUE, cor.method = "pearson",
-            xlab = "Pre-pandemic relative risk", ylab = "Pandemic relative risk") 
+            xlab = "Baseline relative risk", ylab = "Pandemic relative risk") 
 
 
 r %>% 
   filter(state != "District of Columbia") %>% 
+  mutate(pol = as.factor(pol)) |> 
   ggscatter(x = "rr_pre", y = "rr_pan",
             fill = "pol",
             add = "reg.line", conf.int = TRUE, 
             cor.coef = TRUE, cor.method = "pearson",
-            xlab = "Pre-pandemic relative risk", ylab = "Pandemic relative risk",
+            xlab = "Baseline relative risk", ylab = "Pandemic relative risk",
             palette = c("black", "red", "blue", "purple")) 
 
 tt <- 
@@ -644,7 +645,7 @@ tt %>%
   geom_hline(yintercept = 1, lty = "dashed")+
   scale_x_continuous(breaks = seq(0, 2, .1))+
   scale_y_continuous(breaks = seq(0, 2, .1))+
-  labs(x = "Pre-pandemic relative risk", y = "Pandemic relative risk")+
+  labs(x = "Baseline relative risk", y = "Pandemic relative risk")+
   theme_bw()+
   theme(axis.text = element_text(size = 15),
         axis.title = element_text(size = 20),
