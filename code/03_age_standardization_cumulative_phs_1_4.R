@@ -409,7 +409,7 @@ ggsave("figures/pscores_pandemic.png",
 # ranked by pandemic excess, stacked, fill to governor party
 exc_pre3 %>% 
   left_join(pol2,by=join_by(state)) |> 
-  mutate(exc_typ = if_else(exc_typ == "exc_pre_r", "baseline excess","pandemic excess")) |> 
+  mutate(exc_typ = if_else(exc_typ == "exc_pre_r", "baseline shortfall","pandemic excess")) |> 
   ggplot(aes(x=exc_r, y=reorder(state, rnk), fill = gov,alpha=exc_typ)) + 
   geom_bar(position="stack", stat="identity",
            col = "grey30",
@@ -435,7 +435,7 @@ ggsave("figures/excess_pre_and_pandemic.png",
 # ranked to overall excess
 exc_pre3 %>% 
   left_join(pol2,by=join_by(state)) |> 
-  mutate(exc_typ = if_else(exc_typ == "exc_pre_r", "baseline excess","pandemic excess")) |> 
+  mutate(exc_typ = if_else(exc_typ == "exc_pre_r", "baseline shortfall","pandemic excess")) |> 
   ggplot(aes(x=exc_r, y=reorder(state, exc_r), fill = gov,alpha=exc_typ)) + 
   geom_bar(position="stack", stat="identity",
            col = "grey30",
@@ -458,7 +458,7 @@ ggsave("figures/excess_pre_and_pandemic2.png",
        w = 6,
        h = 7.5)
 
-# quick q: for how many states was pre excess same or less than pandemic excess?
+# quick q: for how many states was baseline shortfall same or less than pandemic excess?
 exc_pre3 |> 
   pivot_wider(names_from = exc_typ, values_from = exc_r) |> 
   mutate(ratio = exc_pre_r / exc_r) |> 
