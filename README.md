@@ -10,10 +10,14 @@ This repository holds materials (code and data) relating to the editorial
 7. plot and compare a variety of metrics, such as age-standardized excess rates, relative rates, p-scores, and so on
 some graphs include color coding for governors' political party, others not.
 
-The main code is in scripts
+The main code is in scripts:
+
 `00_setup.R`
+
 `01_excess_age_estimates.R`
+
 `02_age_standardization_excess_shortfall.R`
+
 `03_figures.R`
 
 Each script sources the prior step. If you just want to produce the graphs, open step 3, the necessary data objects will be produced. 
