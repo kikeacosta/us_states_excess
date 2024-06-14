@@ -1,5 +1,5 @@
 This repository holds materials (code and data) relating to the editorial
-"Mortality disparities across US States: excess deaths during the COVID-19 pandemic and preexisting mortality shortfalls".
+"Mortality disparities across US States: excess deaths during the COVID-19 pandemic and preexisting mortality shortfalls", American Journal of Public Health, forthcoming.
 
 1. We take the new Woolf at al excess estimates by state,
 2. accumulate excess over phases 1-4 of the pandemic
