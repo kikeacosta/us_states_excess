@@ -6,31 +6,36 @@ source("code/00_setup.R")
 
 # Monthly deaths in 10-year age groups
 # dtm_10a <- read_tsv("data_input/dts_agex10_monthly_states_2020_2023.txt")
-dtm_10a <- read_tsv("data_input/dts_agex10_35plus_monthly_states_2020_2023.txt")
-
+dtm_10a <- read_tsv("data_input/dts_agex10_35plus_monthly_states_2020_2023.txt",
+                    show_col_types = FALSE)
 # Monthly deaths in ages 15+
-dtm_15p <- read_tsv("data_input/dts_ages_15plus_monthly_states_2020_2023.txt")
+dtm_15p <- read_tsv("data_input/dts_ages_15plus_monthly_states_2020_2023.txt",
+                    show_col_types = FALSE)
 # Monthly deaths in ages 25+
-dtm_25p <- read_tsv("data_input/dts_ages_25plus_monthly_states_2020_2023.txt")
+dtm_25p <- read_tsv("data_input/dts_ages_25plus_monthly_states_2020_2023.txt",
+                    show_col_types = FALSE)
 # Monthly deaths in ages 35+
-dtm_35p <- read_tsv("data_input/dts_ages_35plus_monthly_states_2020_2023.txt")
+dtm_35p <- read_tsv("data_input/dts_ages_35plus_monthly_states_2020_2023.txt",
+                    show_col_types = FALSE)
 # Monthly deaths in ages 45+
-dtm_45p <- read_tsv("data_input/dts_ages_45plus_monthly_states_2020_2023.txt")
+dtm_45p <- read_tsv("data_input/dts_ages_45plus_monthly_states_2020_2023.txt",
+                    show_col_types = FALSE)
 
 # Monthly deaths in all ages
-dtm_all <- read_tsv("data_input/dts_ages_all_monthly_states_2020_2023.txt")
+dtm_all <- read_tsv("data_input/dts_ages_all_monthly_states_2020_2023.txt",
+                    show_col_types = FALSE)
 
 # Monthly deaths in all ages
-dtm_knw <- read_tsv("data_input/dts_ages_all_known_monthly_states_2020_2023.txt")
+dtm_knw <- read_tsv("data_input/dts_ages_all_known_monthly_states_2020_2023.txt",show_col_types = FALSE)
 
 # Function to standardize names for these assorted input files
 std_this <- 
   function(x){
     x %>% 
-      select(state = 2, 
-             year = 5,
-             mth = 7,
-             dx = 8) %>% 
+      select(state = `Occurrence State`, 
+             year = `Year Code`,
+             mth = `Month Code`,
+             dx = `Deaths`) %>% 
       drop_na(state) %>% 
       mutate(mth = str_sub(mth, 6, 7) %>% as.double(),
              date = make_date(y = year, m = mth, d = 15))
@@ -49,11 +54,11 @@ dtm_45p2 <- std_this(dtm_45p) %>% rename(dx_45p = dx)
 # decumulating cumulative sums.
 dtm <- 
   dtm_all2 %>% 
-  left_join(dtm_knw2) %>% 
-  left_join(dtm_15p2) %>% 
-  left_join(dtm_25p2) %>% 
-  left_join(dtm_35p2) %>% 
-  left_join(dtm_45p2) %>% 
+  left_join(dtm_knw2, by = join_by(state, year, mth, date)) %>% 
+  left_join(dtm_15p2, by = join_by(state, year, mth, date)) %>% 
+  left_join(dtm_25p2, by = join_by(state, year, mth, date)) %>% 
+  left_join(dtm_35p2, by = join_by(state, year, mth, date)) %>% 
+  left_join(dtm_45p2, by = join_by(state, year, mth, date)) %>% 
   mutate(dx_unk = dx_all - dx_knw,
          # deaths under 15
          dx_15u = dx_knw - dx_15p,
@@ -77,11 +82,11 @@ dtm2 <-
 # deaths in 10-year ages 45+
 dtm_10a2 <- 
   dtm_10a %>% 
-  select(state = 2, 
-         year = 5,
-         mth = 7,
-         age = 9,
-         dx = 10) %>% 
+  select(state = `Occurrence State`, 
+         year = `Year Code`,
+         mth = `Month Code`,
+         age = `Ten-Year Age Groups Code`,
+         dx = Deaths) %>% 
   drop_na(state) %>% 
   mutate(mth = str_sub(mth, 6, 7) %>% as.double(),
          date = make_date(y = year, m = mth, d = 15)) %>% 
@@ -101,7 +106,7 @@ dtm3 <-
   bind_rows(dtm2,
             dtm_10a2) %>% 
   arrange(state, date, age) %>% 
-  left_join(dtm_all2) %>% 
+  left_join(dtm_all2, by = join_by(state, date)) %>% 
   group_by(state, date, year, mth) %>% 
   mutate(dx = dx_all/sum(dx)*dx)
 
@@ -142,7 +147,8 @@ dts_ph <-
 # ~~~~~~~~~~~~~~~~~~~~~
 
 # excess crude death rates by state
-exc <- read_csv("data_input/excess_estimates_by_state_and_phase.csv")
+exc <- read_csv("data_input/excess_estimates_by_state_and_phase.csv",
+                show_col_types = FALSE)
 
 exc2 <- 
   exc %>% 
@@ -157,17 +163,18 @@ exc2 <-
 
 
 # population
-pop <- read_tsv("data_input/pop_agex5_states_2013_2024.txt")
+pop <- read_tsv("data_input/pop_agex5_states_2013_2024.txt",
+                show_col_types = FALSE)
 
 unique(pop$State)
 
 pop_age <- 
   pop %>% 
-  select(state = 4, 
-         year = 6,
-         sex = 8,
-         age = 3,
-         pop = 10) %>% 
+  select(state = State, 
+         year = `Year Code`,
+         sex = `Gender`,
+         age = `Age Group Code`,
+         pop = `Projected Populations`) %>% 
   drop_na(state) %>% 
   separate(age, c("age", "trash"), sep = "-") %>% 
   select(-trash) %>% 
@@ -224,7 +231,7 @@ exc4 <-
 # This is observed deaths (CDC wonder) minus the Woolf excess estimate
 dts_ph2 <- 
   dts_ph %>% 
-  left_join(exc4) %>% 
+  left_join(exc4, by = join_by(phase, state)) %>% 
   mutate(bsn_tot = dx_all - exc_tot)
 
 # 
@@ -233,18 +240,20 @@ dts_ph2 <-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Annual data 2015-2020
 # deaths in 10-year age groups
-dt10a <- read_tsv("data_input/dts_agex10_annual_states_2015_2020.txt")
+dt10a <- read_tsv("data_input/dts_agex10_annual_states_2015_2020.txt",
+                  show_col_types = FALSE)
 # under 15 mortality as one group
-dtu15a <- read_tsv("data_input/dts_ageU15_annual_states_2015_2020.txt")
+dtu15a <- read_tsv("data_input/dts_ageU15_annual_states_2015_2020.txt",
+                   show_col_types = FALSE)
 
 # standardize column names (risky to rename based on position,
 # but these files are regular)
 dt10a2 <- 
   dt10a %>% 
-  select(state = 2, 
-         year = 6,
-         age = 5,
-         dx = 8) %>% 
+  select(state = State, 
+         year = `Year Code`,
+         age = `Ten-Year Age Groups Code`,
+         dx = Deaths) %>% 
   drop_na(state) 
 
 # tst <- 
@@ -257,9 +266,9 @@ dt10a2 <-
 
 dtu15a2 <- 
   dtu15a %>% 
-  select(state = 2, 
-         year = 4,
-         dx = 6) %>% 
+  select(state = State, 
+         year = `Year Code`,
+         dx = Deaths) %>% 
   drop_na(state) %>% 
   mutate(age = "0")
 
@@ -314,4 +323,6 @@ dts_ph3 %>%
 
 
 write_csv(dts_ph3, "data_inter/excess_state_phase_age.csv")
+
+# end
 
